@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "129086060620",
+    "project_id": "haashh",
+    "storage_bucket": "haashh.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:129086060620:android:6f580dba36ea237c671ce9",
+        "android_client_info": {
+          "package_name": "com.safvielectricalsolutions"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD8j8Uyn7C64t1ev58CZAi9rEaNObxxoVg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
