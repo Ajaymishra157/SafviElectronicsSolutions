@@ -20,10 +20,7 @@ const Constant = {
         user_list: 'main_staff/user_list.php',
         user_delete: 'main_staff/user_delete.php',
         update_user: 'main_staff/update_user.php',
-        add_permision: 'add_permision.php',
-        update_permision: 'update_permision.php',
-        permision_list: 'permision_list.php',
-        fetch_usertype: 'fetch_usertype.php',
+        fetch_usertype: 'main_staff/fetch_usertype.php',
 
         addcustomer: 'customer/addcustomer.php',
         customer_list: 'customer/customer_list.php',
@@ -44,6 +41,15 @@ const Constant = {
         delete_service: 'service/delete_service.php',
         update_service: 'service/update_service.php',
         service_update: 'service/service_update.php',
+        assign_staff: 'service/assign_staff.php',
+
+
+        list_staffattendance: 'staff_attendance/list_staffattendance.php',
+        add_staffattendance: 'staff_attendance/add_staffattendance.php',
+        list_allstaffattendance: 'staff_attendance/list_allstaffattendance.php',
+        filter_attendance: 'staff_attendance/filter_attendance.php',
+
+
 
 
 

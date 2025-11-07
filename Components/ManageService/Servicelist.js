@@ -15,6 +15,8 @@ import {
 } from 'react-native';
 import Constant from '../Commoncomponent/Constant';
 import { useFocusEffect } from '@react-navigation/native';
+import Ionicons from 'react-native-vector-icons/Ionicons'
+import DropDownPicker from 'react-native-dropdown-picker';
 
 
 
@@ -26,6 +28,37 @@ const Servicelist = ({ navigation }) => {
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
     const [modalPosition, setModalPosition] = useState({ top: 0, left: 0 });
+
+    const [assignModal, setAssignModal] = useState(false);
+    const [openUser, setOpenUser] = useState(false);
+    const [userId, setUserId] = useState(null);
+    const [userList, setUserList] = useState([]);
+
+
+    const listUsers = async () => {
+
+        try {
+            // const id = await AsyncStorage.getItem('admin_id');
+            const url = `${Constant.URL}${Constant.OtherURL.user_list}`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: userId }),
+            });
+            const result = await response.json();
+            if (result.code == "200") {
+                const formatted = result.Payload.map(item => ({
+                    label: item.user_name,
+                    value: String(item.userid),
+                }));
+                setUserList(formatted);
+            } else {
+                setUserList([]);
+            }
+        } catch (error) {
+            console.log('Network error in listUsers:', error);
+        }
+    };
 
 
     const listServices = async () => {
@@ -58,18 +91,15 @@ const Servicelist = ({ navigation }) => {
 
     useFocusEffect(
         React.useCallback(() => {
+            listUsers();
             listServices();
         }, [])
     );
     // 🧭 Fix: Adjust modal position accurately
     const openModal = (item, x, y) => {
         setSelectedItem(item);
-        // const adjustedY = y > screenHeight - 20 ? screenHeight - 150 : y; // prevent cutting bottom
-        // setModalPosition({
-        //     top: adjustedY,
-        //     left: x - 100, // adjust left offset as per design
-        // });
-        setModalPosition({ top: y - 15, left: x - 110 });
+
+        setModalPosition({ top: y - 15, left: x - 150 });
 
         setModalVisible(true);
     };
@@ -127,8 +157,53 @@ const Servicelist = ({ navigation }) => {
         const day = String(date.getDate()).padStart(2, '0');
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const year = date.getFullYear();
-        return `${day}-${month}-${year}`;
+        return `${day}/${month}/${year}`;
     };
+
+
+    const assignStaff = async () => {
+        try {
+            if (!userId || !selectedItem?.service_id) {
+                Alert.alert('Error', 'Please select both staff and service.');
+                return;
+            }
+
+
+
+            const url = `${Constant.URL}${Constant.OtherURL.assign_staff}`; // 👈 yahan apna endpoint lagao
+
+            const payload = {
+                service_id: selectedItem.service_id,
+                staff_id: userId,
+            };
+
+            console.log('Assign Staff Payload:', payload);
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+
+            const result = await response.json();
+            console.log('Assign Staff Response:', result);
+
+            if (result.code == 200) {
+
+                ToastAndroid.show("Staff assigned successfully!", ToastAndroid.LONG);
+                setAssignModal(false);
+
+                // ✅ optionally refresh the service list
+                listServices();
+            } else {
+                Alert.alert('Error', result.message || 'Failed to assign staff.');
+            }
+        } catch (error) {
+            console.log('Network error in assignStaff:', error);
+            Alert.alert('Error', 'Something went wrong while assigning staff.');
+        }
+    };
+
 
 
 
@@ -289,7 +364,7 @@ const Servicelist = ({ navigation }) => {
             ) : (
                 <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', }}>
                     <Image
-                        source={require('../../assets/service.png')} // 👈 path to your image
+                        source={require('../../assets/service.png')}
                         style={{ width: 120, height: 120, resizeMode: 'contain', marginBottom: 15, tintColor: '#173161' }}
                     />
                     <Text
@@ -334,6 +409,142 @@ const Servicelist = ({ navigation }) => {
                             <Text style={{ fontSize: 16, fontFamily: 'Inter-Medium', color: '#173161' }}>Delete</Text>
                         </TouchableOpacity>
                         {/* )} */}
+                        {/* 👷 Assign Staff */}
+                        <TouchableOpacity
+                            onPress={() => {
+                                setModalVisible(false);
+                                setTimeout(() => {
+                                    setUserId(selectedItem?.staff_id ? String(selectedItem.staff_id) : '');
+                                    setAssignModal(true);
+                                }, 200);
+                            }}
+                            style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}
+                        >
+                            <Ionicons name="add-circle-outline" size={20} color="#173161" style={{}} />
+                            <Text
+                                style={{ fontSize: 16, fontFamily: 'Inter-Medium', color: '#173161' }}
+                            >
+                                Assign Staff
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                </TouchableOpacity>
+            </Modal>
+            {/* 🔹 Staff Assign Modal */}
+            <Modal visible={assignModal} transparent={true} animationType="slide">
+                <TouchableOpacity
+                    style={{
+                        flex: 1,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        backgroundColor: 'rgba(0,0,0,0.5)',
+                    }}
+                    onPress={() => { setAssignModal(false); setUserId(selectedItem?.staff_id || ''); }}
+                    activeOpacity={1}
+                >
+                    <View
+                        onStartShouldSetResponder={(e) => e.stopPropagation()}
+                        style={{
+                            width: '85%',
+                            backgroundColor: '#fff',
+                            borderRadius: 10,
+                            padding: 20,
+                        }}
+                    >
+                        <Text
+                            style={{
+                                fontSize: 18,
+                                fontFamily: 'Inter-SemiBold',
+                                color: '#173161',
+                                marginBottom: 15,
+                            }}
+                        >
+                            Assign Staff
+                        </Text>
+
+                        {/* ✅ Staff Dropdown */}
+                        <DropDownPicker
+                            placeholder="Select Staff"
+                            open={openUser}
+                            value={userId}
+                            items={userList}
+                            setOpen={(isOpen) => setOpenUser(isOpen)}
+                            setValue={setUserId}
+                            searchable={true}
+                            searchablePlaceholder="Search Staff..."
+                            listMode="MODAL"
+                            modalProps={{
+                                keyboardShouldPersistTaps: 'always',
+                            }}
+                            style={{
+                                height: 45,
+                                borderRadius: 10,
+                                borderColor: 'gray',
+                                backgroundColor: '#F5F5F5',
+                                marginBottom: 20,
+                            }}
+                            textStyle={{
+                                fontFamily: 'Inter-Medium',
+                                fontSize: 14,
+                                color: '#000',
+                            }}
+                            dropDownContainerStyle={{
+                                borderColor: '#CCC',
+                            }}
+                        />
+
+                        {/* 🔘 Buttons */}
+                        <View
+                            style={{
+                                flexDirection: 'row',
+                                justifyContent: 'space-between',
+                                marginTop: 10,
+                            }}
+                        >
+                            <TouchableOpacity
+                                onPress={() => { setAssignModal(false); setUserId(selectedItem?.staff_id || ''); }}
+                                style={{
+                                    backgroundColor: '#ccc',
+                                    paddingVertical: 10,
+                                    borderRadius: 8,
+                                    flex: 0.45,
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <Text
+                                    style={{
+                                        color: '#000',
+                                        fontFamily: 'Inter-Medium',
+                                        fontSize: 14,
+                                    }}
+                                >
+                                    Cancel
+                                </Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                onPress={() => {
+                                    assignStaff();
+                                }}
+                                style={{
+                                    backgroundColor: '#173161',
+                                    paddingVertical: 10,
+                                    borderRadius: 8,
+                                    flex: 0.45,
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <Text
+                                    style={{
+                                        color: '#fff',
+                                        fontFamily: 'Inter-Medium',
+                                        fontSize: 14,
+                                    }}
+                                >
+                                    Assign
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 </TouchableOpacity>
             </Modal>

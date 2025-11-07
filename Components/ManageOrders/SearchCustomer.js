@@ -221,16 +221,16 @@ const SearchCustomer = ({ navigation }) => {
                                 {selectedCompany.phone}
                             </Text>
 
-                            <View style={{ flexDirection: 'row', gap: 2 }}>
+                            {/* <View style={{ flexDirection: 'row', gap: 2 }}>
                                 <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: '#173161', textTransform: 'capitalize' }}>
                                     Total: {selectedCompany.total_due} {selectedCompany.baki_count > 0 ? `(Baki Bill: ${selectedCompany.baki_count})` : ''}
                                 </Text>
 
-                                {isOkButtonVisible &&
+                                { {isOkButtonVisible &&
                                     <TouchableOpacity onPress={handleOkButtonPress} style={{ backgroundColor: '#173161', paddingHorizontal: 10, borderRadius: 10 }}>
                                         <Text style={{ color: '#fff', fontFamily: 'Inter-Regular', fontSize: 12 }}>OK</Text>
-                                    </TouchableOpacity>}
-                            </View>
+                                    </TouchableOpacity>} }
+                            </View> */}
                         </View>
                     </View>
                 )}

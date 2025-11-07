@@ -762,37 +762,37 @@ const Purchaselist = ({ navigation, route }) => {
                                             </View>
 
                                             {/* Right side icon */}
-                                            {(usertype == 'Admin' ||
+                                            {/* {(usertype == 'Admin' ||
                                                 usertype == 'Transporter' ||
-                                                (usertype == 'Salesman' && user_id === item.user_id)) && (
-                                                    <TouchableOpacity
-                                                        onPress={() =>
-                                                            navigation.navigate('PurchaseDetails', {
-                                                                order_no: item.order_no,
-                                                                orderdate: item.purchase_date,
-                                                                customername: item.full_name,
-                                                                Remark: item.remark,
-                                                                companyname: item.vendor_name,
-                                                                location_link: item.location_link,
-                                                                orderstatus: item.status,
-                                                                area: item.area,
-                                                                formatteddate,
-                                                                valuestatus,
-                                                                searchTerm: searchTerm,
-                                                            })
-                                                        }
-                                                        style={{
-                                                            padding: 8,
-                                                            marginLeft: 10,
-                                                            alignSelf: 'center',
-                                                        }}
-                                                    >
-                                                        <Image
-                                                            source={require('../../assets/skip-track.png')}
-                                                            style={{ height: 22, width: 22, tintColor: '#173161' }}
-                                                        />
-                                                    </TouchableOpacity>
-                                                )}
+                                                (usertype == 'Salesman' && user_id === item.user_id)) && ( */}
+                                            <TouchableOpacity
+                                                onPress={() =>
+                                                    navigation.navigate('PurchaseDetails', {
+                                                        order_no: item.order_no,
+                                                        orderdate: item.purchase_date,
+                                                        customername: item.full_name,
+                                                        Remark: item.remark,
+                                                        companyname: item.vendor_name,
+                                                        location_link: item.location_link,
+                                                        orderstatus: item.status,
+                                                        area: item.area,
+                                                        formatteddate,
+                                                        valuestatus,
+                                                        searchTerm: searchTerm,
+                                                    })
+                                                }
+                                                style={{
+                                                    padding: 8,
+                                                    marginLeft: 10,
+                                                    alignSelf: 'center',
+                                                }}
+                                            >
+                                                <Image
+                                                    source={require('../../assets/skip-track.png')}
+                                                    style={{ height: 22, width: 22, tintColor: '#173161' }}
+                                                />
+                                            </TouchableOpacity>
+                                            {/* )} */}
                                         </View>
                                     </View>
 

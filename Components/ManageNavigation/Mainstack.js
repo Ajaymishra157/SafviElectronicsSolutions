@@ -85,6 +85,8 @@ import Servicelist from '../ManageService/Servicelist';
 import AddService from '../ManageService/AddService';
 import SearchServicecustomer from '../ManageService/SearchServicecustomer';
 import OrderListService from '../ManageService/OrderListService';
+import AttendanceList from '../ManageAttendance/AttendanceList';
+import AddAttendance from '../ManageAttendance/AddAttendance';
 
 
 const Mainstack = () => {
@@ -215,6 +217,10 @@ const Mainstack = () => {
         <stack.Screen name='AddService' component={AddService} options={{ headerShown: false }} />
         <stack.Screen name='SearchServicecustomer' component={SearchServicecustomer} options={{ headerShown: false }} />
         <stack.Screen name='OrderListService' component={OrderListService} options={{ headerShown: false }} />
+        <stack.Screen name='AttendanceList' component={AttendanceList} options={{ headerShown: false }} />
+        <stack.Screen name='AddAttendance' component={AddAttendance} options={{ headerShown: false }} />
+
+
 
 
 

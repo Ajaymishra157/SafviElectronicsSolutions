@@ -46,6 +46,9 @@ const Dashboard = ({ navigation }) => {
     const [currentCompanyIndex, setCurrentCompanyIndex] = useState(0);
     const [logoutModalVisible, setLogoutModalVisible] = useState(false);
 
+    const [usertype, setUsertype] = useState(null);
+
+
     const [CloseAppModal, setCloseAppModal] = useState(false);
 
 
@@ -118,6 +121,31 @@ const Dashboard = ({ navigation }) => {
         useCallback(() => {
             listPermissions();
         }, [listPermissions])
+    );
+
+    const fetchusertype = async () => {
+        setLoading(true);
+        const id = await AsyncStorage.getItem('admin_id');
+
+        const url = `${Constant.URL}${Constant.OtherURL.fetch_usertype}`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: id }),
+        });
+        const result = await response.json();
+        if (result.code == "200") {
+            setUsertype(result.payload.user_type)
+        } else {
+            console.log('Error fetching permissions');
+        }
+        setLoading(false);
+    };
+    useFocusEffect(
+        React.useCallback(() => {
+            fetchusertype();
+
+        }, [])
     );
 
     useFocusEffect(
@@ -424,69 +452,76 @@ const Dashboard = ({ navigation }) => {
                 <ScrollView keyboardShouldPersistTaps='handled' >
                     {/* Permissions-Based UI */}
                     {/* {hasPermission("Users") || hasPermission("Category") || hasPermission("Sub Category") ? ( */}
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, borderRadius: 10, borderWidth: 0.5, borderColor: '#DCDCDC', backgroundColor: '#fff', elevation: 5 }}>
-                        {/* {hasPermission("Users") && */}
-                        <PermissionButton navigation={navigation} route="Categorylist" image="category" label="Category" />
-                        <PermissionButton navigation={navigation} route="SubCategorylist" image="category" label="Sub Category" />
-                        <PermissionButton navigation={navigation} route="Productlist" image="products" label="Products" />
+                    {usertype !== 'Staff' && (
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, borderRadius: 10, borderWidth: 0.5, borderColor: '#DCDCDC', backgroundColor: '#fff', elevation: 5 }}>
+                            {/* {hasPermission("Users") && */}
+                            <PermissionButton navigation={navigation} route="Categorylist" image="category" label="Category" />
+                            <PermissionButton navigation={navigation} route="SubCategorylist" image="category" label="Sub Category" />
+                            <PermissionButton navigation={navigation} route="Productlist" image="products" label="Products" />
 
 
-                        {/* {hasPermission("Category") &&  */}
+                            {/* {hasPermission("Category") &&  */}
 
 
-                        {/* {hasPermission("Sub Category") &&  */}
+                            {/* {hasPermission("Sub Category") &&  */}
 
-                    </View>
+                        </View>
+                    )}
                     {/* ) : null} */}
 
                     {/* {hasPermission("Products") || hasPermission("Customers") || hasPermission("Orders") ? ( */}
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, backgroundColor: '#fff', borderRadius: 10, borderWidth: 0.5, borderColor: '#DCDCDC', elevation: 5, marginTop: 10 }}>
-                        {/* {hasPermission("Products") &&  */}
-                        <PermissionButton navigation={navigation} route="Userslist" image="users" label="Staffs" />
-                        <PermissionButton navigation={navigation} route="Customerlist" image="customers" label="Customers" />
-                        <PermissionButton navigation={navigation} route="OrderList" image="orders" label="Orders" />
+                    {usertype !== 'Staff' && (
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, backgroundColor: '#fff', borderRadius: 10, borderWidth: 0.5, borderColor: '#DCDCDC', elevation: 5, marginTop: 10 }}>
+                            {/* {hasPermission("Products") &&  */}
+                            <PermissionButton navigation={navigation} route="Userslist" image="users" label="Staffs" />
+                            <PermissionButton navigation={navigation} route="Customerlist" image="customers" label="Customers" />
+                            <PermissionButton navigation={navigation} route="OrderList" image="orders" label="Orders" />
 
-                        {/* {hasPermission("Customers") && */}
-                        {/* <PermissionButton navigation={navigation} route="VendorsList" image="customers" label="Vendors" /> */}
+                            {/* {hasPermission("Customers") && */}
+                            {/* <PermissionButton navigation={navigation} route="VendorsList" image="customers" label="Vendors" /> */}
 
 
-                        {/* {hasPermission("Orders") &&  */}
+                            {/* {hasPermission("Orders") &&  */}
 
-                    </View>
+                        </View>
+                    )}
                     {/* ) : null} */}
 
                     {/* {hasPermission("Market Visit") || hasPermission("Delivery Report") || hasPermission("Sales Report") ? ( */}
+                    {usertype !== 'Staff' && (
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, backgroundColor: '#fff', borderRadius: 10, borderWidth: 0.5, borderColor: '#DCDCDC', elevation: 5, marginTop: 10 }}>
+                            {/* {hasPermission("Market Visit") &&  */}
+                            {/* <PermissionButton navigation={navigation} route="Marketvisit" image="products" label="Market Visit" /> */}
+                            <PermissionButton navigation={navigation} route="VendorsList" image="customers" label="Vendors" />
 
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, backgroundColor: '#fff', borderRadius: 10, borderWidth: 0.5, borderColor: '#DCDCDC', elevation: 5, marginTop: 10 }}>
-                        {/* {hasPermission("Market Visit") &&  */}
-                        {/* <PermissionButton navigation={navigation} route="Marketvisit" image="products" label="Market Visit" /> */}
-                        <PermissionButton navigation={navigation} route="VendorsList" image="customers" label="Vendors" />
+                            <PermissionButton navigation={navigation} route="Purchaselist" image="purchase" label="Purchase" />
+                            <PermissionButton navigation={navigation} route="Servicelist" image="service" label="service" />
 
-                        <PermissionButton navigation={navigation} route="Purchaselist" image="purchase" label="Purchase" />
-                        <PermissionButton navigation={navigation} route="Servicelist" image="service" label="service" />
+                            {/* {hasPermission("Sales Report") && */}
+                            {/* <PermissionButton navigation={navigation} route="SalesReport" image="sales" label="Sales Report" /> */}
+                            {/* <PermissionButton navigation={navigation} route="SubCategorylist" image="category" label="Sub Category" /> */}
+                            {/* {hasPermission("Delivery Report") &&  */}
+                            {/* <PermissionButton navigation={navigation} route="Deliveryreport" image="sales" label="Delivery Report" /> */}
 
-                        {/* {hasPermission("Sales Report") && */}
-                        {/* <PermissionButton navigation={navigation} route="SalesReport" image="sales" label="Sales Report" /> */}
-                        {/* <PermissionButton navigation={navigation} route="SubCategorylist" image="category" label="Sub Category" /> */}
-                        {/* {hasPermission("Delivery Report") &&  */}
-                        {/* <PermissionButton navigation={navigation} route="Deliveryreport" image="sales" label="Delivery Report" /> */}
-
-                    </View>
+                        </View>
+                    )}
                     {/* // ) : null} */}
 
                     {/* {hasPermission("Delivery Man Report") || hasPermission("Customer Type") || hasPermission("Payment Type1") ? ( */}
+                    {usertype == 'Staff' && (
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, backgroundColor: '#fff', borderRadius: 10, borderWidth: 0.5, borderColor: '#DCDCDC', elevation: 5, marginTop: 10 }}>
+                            {/* {hasPermission("Payment Type1") && */}
+                            {/* <PermissionButton navigation={navigation} route="PaymentList" image="payment" label="Payment Type" /> */}
+                            <PermissionButton navigation={navigation} route="AttendanceList" image="attendance" label="Attendance" />
 
-                    {/* <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, backgroundColor: '#fff', borderRadius: 10, borderWidth: 0.5, borderColor: '#DCDCDC', elevation: 5, marginTop: 10 }}> */}
-                    {/* {hasPermission("Payment Type1") && */}
-                    {/* <PermissionButton navigation={navigation} route="PaymentList" image="payment" label="Payment Type" /> */}
+                            {/* {hasPermission("Customer Type") && */}
+                            {/* <PermissionButton navigation={navigation} route="Customercategory" image="customer" label="Customer Type" /> */}
 
-                    {/* {hasPermission("Customer Type") && */}
-                    {/* <PermissionButton navigation={navigation} route="Customercategory" image="customer" label="Customer Type" /> */}
+                            {/* {hasPermission("Delivery Man Report") && */}
+                            {/* <PermissionButton navigation={navigation} route="DeliveryManReport" image="deliveryman" label="Delivery Man Report" /> */}
 
-                    {/* {hasPermission("Delivery Man Report") && */}
-                    {/* <PermissionButton navigation={navigation} route="DeliveryManReport" image="deliveryman" label="Delivery Man Report" /> */}
-
-                    {/* </View> */}
+                        </View>
+                    )}
                     {/* ) : null} */}
 
                     {/* {hasPermission("Party Ledger") || hasPermission("Salesman Report") || hasPermission("LMTD") ? ( */}

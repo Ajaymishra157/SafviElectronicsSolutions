@@ -17,7 +17,7 @@ const AddService = () => {
 
 
     const [loading, setLoading] = useState(false);
-    // const [userList, setUserList] = useState([]);
+    const [userList, setUserList] = useState([]);
 
     const [customerList, setCustomerList] = useState([]);
     const [orderList, setOrderList] = useState([]);
@@ -60,32 +60,32 @@ const AddService = () => {
     // }, [editService, userList, customerList]);
 
 
-    // const listUsers = async () => {
-    //     setLoading(true);
-    //     try {
-    //         // const id = await AsyncStorage.getItem('admin_id');
-    //         const url = `${Constant.URL}${Constant.OtherURL.user_list}`;
-    //         const response = await fetch(url, {
-    //             method: 'POST',
-    //             headers: { 'Content-Type': 'application/json' },
-    //             body: JSON.stringify({ user_id: userId }),
-    //         });
-    //         const result = await response.json();
-    //         if (result.code == "200") {
-    //             const formatted = result.Payload.map(item => ({
-    //                 label: item.user_name,
-    //                 value: String(item.userid),
-    //             }));
-    //             setUserList(formatted);
-    //         } else {
-    //             setUserList([]);
-    //         }
-    //     } catch (error) {
-    //         console.log('Network error in listUsers:', error);
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // };
+    const listUsers = async () => {
+        setLoading(true);
+        try {
+            // const id = await AsyncStorage.getItem('admin_id');
+            const url = `${Constant.URL}${Constant.OtherURL.user_list}`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: userId }),
+            });
+            const result = await response.json();
+            if (result.code == "200") {
+                const formatted = result.Payload.map(item => ({
+                    label: item.user_name,
+                    value: String(item.userid),
+                }));
+                setUserList(formatted);
+            } else {
+                setUserList([]);
+            }
+        } catch (error) {
+            console.log('Network error in listUsers:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const listCustomers = async () => {
         setLoading(true);
@@ -147,7 +147,7 @@ const AddService = () => {
 
     useFocusEffect(
         React.useCallback(() => {
-            // listUsers();
+            listUsers();
             listCustomers();
         }, [])
     );
@@ -204,14 +204,14 @@ const AddService = () => {
         const payload = isEdit
             ? {
                 service_id: editService.service_id,
-
+                staff_id: userId,
                 cust_id: customerId,
                 service_name: serviceName,
                 service_amount: amount,
                 order_no: orderNo || '', // optional
             }
             : {
-
+                staff_id: userId,
                 cust_id: customerId,
                 service_name: serviceName,
                 service_amount: amount,
@@ -308,59 +308,7 @@ const AddService = () => {
                         <ActivityIndicator size="large" color="#000" style={{ marginTop: 20 }} />
                     )}
 
-                    {/* User Dropdown */}
-                    {/* <View style={{ marginBottom: 15, marginTop: 10, zIndex: openUser ? 10 : 1 }}>
-                        <Text
-                            style={{
-                                color: 'gray',
-                                fontFamily: 'Inter-Regular',
-                                fontSize: 12,
-                                marginLeft: 5,
-                                marginBottom: 5,
-                            }}>
-                            Staff
-                        </Text>
-                        <DropDownPicker
-                            placeholder="Select Staff"
-                            open={openUser}
-                            value={userId}
-                            items={userList}
-                            setOpen={(isOpen) => {
-                                setOpenUser(isOpen);
-                                if (isOpen) Keyboard.dismiss();
-                            }}
 
-                            setValue={setUserId}
-                            style={{
-                                height: 40,
-                                borderRadius: 10,
-                                borderColor: 'gray',
-                                backgroundColor: '#F5F5F5',
-                            }}
-                            textStyle={{
-                                fontFamily: 'Inter-Medium',
-                                fontSize: 14,
-                                color: '#000',
-                            }}
-                            dropDownContainerStyle={{
-                                alignSelf: 'center',
-                                borderColor: '#CCC',
-                                width: '100%',
-                                backgroundColor: '#fff',
-                                shadowColor: '#000',
-                                shadowOffset: { width: 0, height: 1 },
-                                shadowOpacity: 0.1,
-                                shadowRadius: 3,
-                                elevation: 3,
-                                zIndex: 1000,
-                            }}
-                            // ✅ Add this ↓↓↓↓↓↓↓
-                            listMode="MODAL"
-                            scrollViewProps={{
-                                nestedScrollEnabled: true,
-                            }}
-                        />
-                    </View> */}
 
                     {/* Order Dropdown */}
                     {/* <View style={{ marginBottom: 15, marginTop: 10, zIndex: openOrder ? 10 : 1 }}>
@@ -511,6 +459,70 @@ const AddService = () => {
                             ) : null}
                         </View>
                     )}
+
+                    {/* User Dropdown */}
+                    <View style={{ marginBottom: 15, marginTop: 10, zIndex: openUser ? 10 : 1 }}>
+                        <Text
+                            style={{
+                                color: 'gray',
+                                fontFamily: 'Inter-Regular',
+                                fontSize: 12,
+                                marginLeft: 5,
+                                marginBottom: 5,
+                            }}>
+                            Staff
+                        </Text>
+                        <DropDownPicker
+                            placeholder="Select Staff"
+                            open={openUser}
+                            value={userId}
+                            items={userList}
+                            setOpen={setOpenUser}
+                            setValue={setUserId}
+                            searchable={true}
+                            searchablePlaceholder="Search Staff..."
+                            listMode="MODAL"
+                            modalProps={{
+                                keyboardShouldPersistTaps: 'always', // ✅ THIS LINE FIXES DOUBLE TAP ISSUE
+                            }}
+                            searchContainerStyle={{
+                                borderBottomColor: '#dfdfdf',
+                                borderBottomWidth: 1,
+                            }}
+                            searchTextInputStyle={{
+                                fontFamily: 'Inter-Regular',
+                                fontSize: 14,
+                                color: '#000',
+                            }}
+                            style={{
+                                height: 40,
+                                borderRadius: 10,
+                                borderColor: 'gray',
+                                backgroundColor: '#F5F5F5',
+                            }}
+                            textStyle={{
+                                fontFamily: 'Inter-Medium',
+                                fontSize: 14,
+                                color: '#000',
+                            }}
+                            dropDownContainerStyle={{
+                                alignSelf: 'center',
+                                borderColor: '#CCC',
+                                width: '100%',
+                                backgroundColor: '#fff',
+                                shadowColor: '#000',
+                                shadowOffset: { width: 0, height: 1 },
+                                shadowOpacity: 0.1,
+                                shadowRadius: 3,
+                                elevation: 3,
+                                zIndex: 1000,
+                            }}
+                            scrollViewProps={{
+                                nestedScrollEnabled: true,
+                            }}
+                        />
+
+                    </View>
 
 
                     {/* Service Name */}
