@@ -273,7 +273,7 @@ const AddUser = ({ navigation, route }) => {
                                     shadowOpacity: 0.1,
                                     shadowRadius: 3,
                                     elevation: 2,
-                                    backgroundColor: '#fff'
+                                    backgroundColor: '#fff', marginTop: 3
                                 }}
                                 dropDownDirection='DEFAULT'
                             />

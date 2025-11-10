@@ -578,7 +578,7 @@ const AddAttendance = ({ navigation }) => {
                             fontFamily: 'Roboto-Bold',
                             fontSize: 16
                         }}>
-                            ✅ Submit Attendance
+                            Submit Attendance
                         </Text>
                     </TouchableOpacity>
                 )}

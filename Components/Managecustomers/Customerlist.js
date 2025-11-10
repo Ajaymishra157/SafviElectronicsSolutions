@@ -26,42 +26,42 @@ const Customerlist = ({ navigation }) => {
     const [permissionlist, setPermissionsList] = useState([]);
     const [permissions, setPermissions] = useState([]);
 
-    const listPermissions = async () => {
-        setMainloading(true);
-        const id = await AsyncStorage.getItem('admin_id');
+    // const listPermissions = async () => {
+    //     setMainloading(true);
+    //     const id = await AsyncStorage.getItem('admin_id');
 
-        const url = `${Constant.URL}${Constant.OtherURL.permision_list}`;
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: id }),
-        });
-        const result = await response.json();
-        if (result.code == "200") {
-            setPermissionsList(result.payload);
-            // Prepare permissions state
-            let permissionsData = {};
-            result.payload.forEach((item) => {
-                const permsArray = item.menu_permission.split(',');
-                let permsObject = {};
-                permsArray.forEach((perm) => {
-                    permsObject[perm] = true;
-                });
-                permissionsData[item.menu_name] = permsObject;
-            });
+    //     const url = `${Constant.URL}${Constant.OtherURL.permision_list}`;
+    //     const response = await fetch(url, {
+    //         method: 'POST',
+    //         headers: { 'Content-Type': 'application/json' },
+    //         body: JSON.stringify({ user_id: id }),
+    //     });
+    //     const result = await response.json();
+    //     if (result.code == "200") {
+    //         setPermissionsList(result.payload);
+    //         // Prepare permissions state
+    //         let permissionsData = {};
+    //         result.payload.forEach((item) => {
+    //             const permsArray = item.menu_permission.split(',');
+    //             let permsObject = {};
+    //             permsArray.forEach((perm) => {
+    //                 permsObject[perm] = true;
+    //             });
+    //             permissionsData[item.menu_name] = permsObject;
+    //         });
 
-            setPermissions(permissionsData);
-        } else {
-            console.log('Error fetching permissions');
-        }
-        setMainloading(false);
-    };
+    //         setPermissions(permissionsData);
+    //     } else {
+    //         console.log('Error fetching permissions');
+    //     }
+    //     setMainloading(false);
+    // };
 
-    useFocusEffect(
-        React.useCallback(() => {
-            listPermissions();
-        }, [])
-    );
+    // useFocusEffect(
+    //     React.useCallback(() => {
+    //         listPermissions();
+    //     }, [])
+    // );
 
     const hasCategoryPermissions = permissions['Customers'] || {};
     const hasPermissions = permissions['Distributor'] || {};
@@ -88,14 +88,15 @@ const Customerlist = ({ navigation }) => {
     const listcustomers = async (text = searchTerm) => {
         // Use the passed text parameter, fallback to searchTerm if no text provided
         const searchText = text !== undefined ? text : searchTerm;
+        // const searchText = text ?? searchTerm ?? "";
 
-        console.log("search text kya hai isme", searchText);
+
+
         setLoading(true);
 
         // Update search term state
         setSearchTerm(searchText);
 
-        console.log("search text kya hai isme", searchTerm)
 
         const url = `${Constant.URL}${Constant.OtherURL.customer_list}`;
         const response = await fetch(url, {

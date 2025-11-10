@@ -22,42 +22,42 @@ const Categorylist = () => {
     const [permissionlist, setPermissionsList] = useState([]);
     const [permissions, setPermissions] = useState([]);
 
-    const listPermissions = async () => {
-        setMainloading(true);
-        const id = await AsyncStorage.getItem('admin_id');
+    // const listPermissions = async () => {
+    //     setMainloading(true);
+    //     const id = await AsyncStorage.getItem('admin_id');
 
-        const url = `${Constant.URL}${Constant.OtherURL.permision_list}`;
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: id }),
-        });
-        const result = await response.json();
-        if (result.code == "200") {
-            setPermissionsList(result.payload);
-            // Prepare permissions state
-            let permissionsData = {};
-            result.payload.forEach((item) => {
-                const permsArray = item.menu_permission.split(',');
-                let permsObject = {};
-                permsArray.forEach((perm) => {
-                    permsObject[perm] = true;
-                });
-                permissionsData[item.menu_name] = permsObject;
-            });
+    //     const url = `${Constant.URL}${Constant.OtherURL.permision_list}`;
+    //     const response = await fetch(url, {
+    //         method: 'POST',
+    //         headers: { 'Content-Type': 'application/json' },
+    //         body: JSON.stringify({ user_id: id }),
+    //     });
+    //     const result = await response.json();
+    //     if (result.code == "200") {
+    //         setPermissionsList(result.payload);
+    //         // Prepare permissions state
+    //         let permissionsData = {};
+    //         result.payload.forEach((item) => {
+    //             const permsArray = item.menu_permission.split(',');
+    //             let permsObject = {};
+    //             permsArray.forEach((perm) => {
+    //                 permsObject[perm] = true;
+    //             });
+    //             permissionsData[item.menu_name] = permsObject;
+    //         });
 
-            setPermissions(permissionsData);
-        } else {
-            console.log('Error fetching permissions');
-        }
-        setMainloading(false);
-    };
+    //         setPermissions(permissionsData);
+    //     } else {
+    //         console.log('Error fetching permissions');
+    //     }
+    //     setMainloading(false);
+    // };
 
-    useFocusEffect(
-        React.useCallback(() => {
-            listPermissions();
-        }, [])
-    );
+    // useFocusEffect(
+    //     React.useCallback(() => {
+    //         listPermissions();
+    //     }, [])
+    // );
 
     const listcategory = async () => {
         setMainloading(true);

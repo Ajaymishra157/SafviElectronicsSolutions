@@ -317,7 +317,7 @@ const AttendanceList = ({ navigation }) => {
             </View>
 
             {/* Staff Dropdown */}
-            <View style={{ margin: 15, zIndex: openUser ? 10 : 1 }}>
+            {/* <View style={{ margin: 15, zIndex: openUser ? 10 : 1 }}>
                 <Text
                     style={{
                         color: 'gray',
@@ -369,7 +369,7 @@ const AttendanceList = ({ navigation }) => {
                     }}
                     listMode="MODAL"
                 />
-            </View>
+            </View> */}
 
             {/* Attendance List */}
             {loading ? (
