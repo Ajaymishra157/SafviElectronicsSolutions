@@ -61,67 +61,67 @@ const Dashboard = ({ navigation }) => {
         resetModalState();
     }, []);
 
-    const listPermissions = useCallback(async () => {
-        try {
-            setLoading(true);
-            const id = await AsyncStorage.getItem('admin_id');
-            const url = `${Constant.URL}${Constant.OtherURL.permision_list}`;
+    // const listPermissions = useCallback(async () => {
+    //     try {
+    //         setLoading(true);
+    //         const id = await AsyncStorage.getItem('admin_id');
+    //         const url = `${Constant.URL}${Constant.OtherURL.permision_list}`;
 
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id: id }),
-            });
+    //         const response = await fetch(url, {
+    //             method: 'POST',
+    //             headers: { 'Content-Type': 'application/json' },
+    //             body: JSON.stringify({ user_id: id }),
+    //         });
 
-            const result = await response.json();
-            if (result.code == "200") {
-                setApkVersion(result.apk_version);
-                if (result.status == "deactive") {
-                    Alert.alert("Access Denied", "Your account has been deactivated.");
-                    await AsyncStorage.clear(); // Clear stored user data
-                    navigation.reset({
-                        index: 0,
-                        routes: [{ name: "LoginUser" }]
-                    }); // Redirect to login
-                }
-                const permissionsData = result.payload.reduce((acc, item) => {
-                    acc[item.menu_name] = item.menu_permission.split(',').reduce((obj, perm) => {
-                        obj[perm] = true;
-                        return obj;
-                    }, {});
-                    return acc;
-                }, {});
+    //         const result = await response.json();
+    //         if (result.code == "200") {
+    //             setApkVersion(result.apk_version);
+    //             if (result.status == "deactive") {
+    //                 Alert.alert("Access Denied", "Your account has been deactivated.");
+    //                 await AsyncStorage.clear(); // Clear stored user data
+    //                 navigation.reset({
+    //                     index: 0,
+    //                     routes: [{ name: "LoginUser" }]
+    //                 }); // Redirect to login
+    //             }
+    //             const permissionsData = result.payload.reduce((acc, item) => {
+    //                 acc[item.menu_name] = item.menu_permission.split(',').reduce((obj, perm) => {
+    //                     obj[perm] = true;
+    //                     return obj;
+    //                 }, {});
+    //                 return acc;
+    //             }, {});
 
-                setPermissions(permissionsData);
-                const modalShown = await AsyncStorage.getItem('modalShown');
+    //             setPermissions(permissionsData);
+    //             const modalShown = await AsyncStorage.getItem('modalShown');
 
-                if ((!modalShown || modalShown == 'false')) {
-                    if (permissionsData["Pending Product Summary"]) {
-                        // Start with product summary
-                        setModalStep("product");
-                        setIsModalVisible(true);
-                        await AsyncStorage.setItem('modalShown', 'true');
-                    } else if (duebills.length > 0) {
-                        // Skip product summary → go directly to due bills
-                        setModalStep("duebills");
-                        setCurrentCompanyIndex(0);
-                        setIsModalVisible(true);
-                        await AsyncStorage.setItem('modalShown', 'true');
-                    }
-                }
-            }
-        } catch (error) {
-            console.error('Error fetching permissions:', error);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+    //             if ((!modalShown || modalShown == 'false')) {
+    //                 if (permissionsData["Pending Product Summary"]) {
+    //                     // Start with product summary
+    //                     setModalStep("product");
+    //                     setIsModalVisible(true);
+    //                     await AsyncStorage.setItem('modalShown', 'true');
+    //                 } else if (duebills.length > 0) {
+    //                     // Skip product summary → go directly to due bills
+    //                     setModalStep("duebills");
+    //                     setCurrentCompanyIndex(0);
+    //                     setIsModalVisible(true);
+    //                     await AsyncStorage.setItem('modalShown', 'true');
+    //                 }
+    //             }
+    //         }
+    //     } catch (error) {
+    //         console.error('Error fetching permissions:', error);
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // }, []);
 
-    useFocusEffect(
-        useCallback(() => {
-            listPermissions();
-        }, [listPermissions])
-    );
+    // useFocusEffect(
+    //     useCallback(() => {
+    //         listPermissions();
+    //     }, [listPermissions])
+    // );
 
     const fetchusertype = async () => {
         setLoading(true);
@@ -452,7 +452,7 @@ const Dashboard = ({ navigation }) => {
                 <ScrollView keyboardShouldPersistTaps='handled' >
                     {/* Permissions-Based UI */}
                     {/* {hasPermission("Users") || hasPermission("Category") || hasPermission("Sub Category") ? ( */}
-                    {usertype !== 'Staff' && (
+                    {usertype !== 'Office staff' && (
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, borderRadius: 10, borderWidth: 0.5, borderColor: '#DCDCDC', backgroundColor: '#fff', elevation: 5 }}>
                             {/* {hasPermission("Users") && */}
                             <PermissionButton navigation={navigation} route="Categorylist" image="category" label="Category" />
@@ -470,7 +470,7 @@ const Dashboard = ({ navigation }) => {
                     {/* ) : null} */}
 
                     {/* {hasPermission("Products") || hasPermission("Customers") || hasPermission("Orders") ? ( */}
-                    {usertype !== 'Staff' && (
+                    {usertype !== 'Office staff' && (
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, backgroundColor: '#fff', borderRadius: 10, borderWidth: 0.5, borderColor: '#DCDCDC', elevation: 5, marginTop: 10 }}>
                             {/* {hasPermission("Products") &&  */}
                             <PermissionButton navigation={navigation} route="Userslist" image="users" label="Staffs" />
@@ -488,14 +488,14 @@ const Dashboard = ({ navigation }) => {
                     {/* ) : null} */}
 
                     {/* {hasPermission("Market Visit") || hasPermission("Delivery Report") || hasPermission("Sales Report") ? ( */}
-                    {usertype !== 'Staff' && (
+                    {usertype !== 'Office staff' && (
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, backgroundColor: '#fff', borderRadius: 10, borderWidth: 0.5, borderColor: '#DCDCDC', elevation: 5, marginTop: 10 }}>
                             {/* {hasPermission("Market Visit") &&  */}
                             {/* <PermissionButton navigation={navigation} route="Marketvisit" image="products" label="Market Visit" /> */}
                             <PermissionButton navigation={navigation} route="VendorsList" image="customers" label="Vendors" />
 
                             <PermissionButton navigation={navigation} route="Purchaselist" image="purchase" label="Purchase" />
-                            <PermissionButton navigation={navigation} route="Servicelist" image="service" label="service" />
+                            <PermissionButton navigation={navigation} route="Servicelist" image="service" label="Service" />
 
                             {/* {hasPermission("Sales Report") && */}
                             {/* <PermissionButton navigation={navigation} route="SalesReport" image="sales" label="Sales Report" /> */}
@@ -508,11 +508,11 @@ const Dashboard = ({ navigation }) => {
                     {/* // ) : null} */}
 
                     {/* {hasPermission("Delivery Man Report") || hasPermission("Customer Type") || hasPermission("Payment Type1") ? ( */}
-                    {usertype == 'Staff' && (
+                    {usertype == 'Office staff' && (
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, backgroundColor: '#fff', borderRadius: 10, borderWidth: 0.5, borderColor: '#DCDCDC', elevation: 5, marginTop: 10 }}>
                             {/* {hasPermission("Payment Type1") && */}
                             {/* <PermissionButton navigation={navigation} route="PaymentList" image="payment" label="Payment Type" /> */}
-                            <PermissionButton navigation={navigation} route="AttendanceList" image="attendance" label="Attendance" />
+                            <PermissionButton navigation={navigation} route="AddAttendance" image="attendance" label="Attendance" />
 
                             {/* {hasPermission("Customer Type") && */}
                             {/* <PermissionButton navigation={navigation} route="Customercategory" image="customer" label="Customer Type" /> */}
@@ -615,50 +615,52 @@ const Dashboard = ({ navigation }) => {
                 </ScrollView>
                 {/* {hasOrderAddPermission && ( */}
                 {/* Sticky Create Order Button */}
-                <View style={{
-                    position: 'absolute',
-                    bottom: 15,
-                    alignSelf: 'center', // ✅ center horizontally
-                    zIndex: 10,
+                {usertype == 'Admin' && (
+                    <View style={{
+                        position: 'absolute',
+                        bottom: 15,
+                        alignSelf: 'center', // ✅ center horizontally
+                        zIndex: 10,
 
 
-                }}>
-                    <TouchableOpacity
-                        activeOpacity={0.8}
-                        onPress={() => navigation.navigate('SearchCustomer')}
-                        style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            backgroundColor: '#0a326e',
-                            paddingVertical: 12,
-                            paddingHorizontal: 12,
-                            borderRadius: 25,
-                            elevation: 6,
-                            shadowColor: '#000',
-                            shadowOpacity: 0.2,
-                            shadowOffset: { width: 0, height: 3 },
-                            shadowRadius: 4,
-                        }}
-                    >
-                        <Image
-                            source={require('../assets/trolley.png')} // 👈 Add your icon image here
+                    }}>
+                        <TouchableOpacity
+                            activeOpacity={0.8}
+                            onPress={() => navigation.navigate('SearchCustomer')}
                             style={{
-                                height: 20,
-                                width: 20,
-                                tintColor: '#fff',
-                                marginRight: 8,
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                backgroundColor: '#0a326e',
+                                paddingVertical: 12,
+                                paddingHorizontal: 12,
+                                borderRadius: 25,
+                                elevation: 6,
+                                shadowColor: '#000',
+                                shadowOpacity: 0.2,
+                                shadowOffset: { width: 0, height: 3 },
+                                shadowRadius: 4,
                             }}
-                        />
-                        <Text style={{
-                            color: '#fff',
-                            fontSize: 16,
-                            fontFamily: 'Inter-SemiBold',
-                        }}>
-                            Create New Order
-                        </Text>
-                    </TouchableOpacity>
-                </View>
+                        >
+                            <Image
+                                source={require('../assets/trolley.png')} // 👈 Add your icon image here
+                                style={{
+                                    height: 20,
+                                    width: 20,
+                                    tintColor: '#fff',
+                                    marginRight: 8,
+                                }}
+                            />
+                            <Text style={{
+                                color: '#fff',
+                                fontSize: 16,
+                                fontFamily: 'Inter-SemiBold',
+                            }}>
+                                Create New Order
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
 
                 {/* )} */}
             </View>

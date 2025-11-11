@@ -220,7 +220,7 @@ const Customerlist = ({ navigation }) => {
             </View>
 
             <View style={{ margin: 10 }}>
-                <TextInput placeholder='Search by company name or mobile' value={searchTerm}
+                <TextInput placeholder='Search by Customer name or mobile' value={searchTerm}
                     onChangeText={listcustomers} placeholderTextColor='gray' style={{ fontFamily: 'Inter-Medium', fontSize: 14, color: '#173161', borderWidth: 1, borderColor: '#E0E0E0', backgroundColor: '#fff', borderRadius: 15, paddingHorizontal: 10 }} />
             </View>
 

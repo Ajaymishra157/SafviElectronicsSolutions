@@ -18,7 +18,9 @@ import Constant from '../Commoncomponent/Constant'
 
 
 const OrderListService = ({ navigation, route }) => {
-    const { customerid, selectedOrderNo, customerName } = route.params || {}
+    const { customerid, selectedOrderNo, customerName, staffName } = route.params || {}
+
+    console.log("staff Name ye hai", staffName);
     const [orderList, setOrderList] = useState([])
     const [filteredOrders, setFilteredOrders] = useState([])
     const [selectedOrder, setSelectedOrder] = useState(selectedOrderNo || null);
@@ -30,7 +32,7 @@ const OrderListService = ({ navigation, route }) => {
     // API call to fetch orders
     const listOrders = async (staffId) => {
         if (!staffId) return
-        console.log("staff id ye hai", staffId)
+
         setLoading(true)
         try {
             const url = `${Constant.URL}${Constant.OtherURL.staff_wise_order_list}`
@@ -152,6 +154,7 @@ const OrderListService = ({ navigation, route }) => {
                     customerid: customerid,
                     customerName: item.customer_name,
                     service: route.params?.service || null,
+                    staffName: staffName
                 })
             }
         >
@@ -209,6 +212,7 @@ const OrderListService = ({ navigation, route }) => {
                         customerid: customerid,
                         customerName: item.customer_name,
                         service: route.params?.service || null,
+                        staffName: staffName
                     })
                 }
                 style={{
@@ -375,6 +379,7 @@ const OrderListService = ({ navigation, route }) => {
                         navigation.navigate('AddService', {
                             customerid: customerid,
                             customerName: customerName,
+                            staffName: staffName
                         })
                     }
                     style={{

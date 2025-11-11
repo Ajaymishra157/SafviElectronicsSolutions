@@ -214,25 +214,25 @@ const PurchaseDetails = ({ navigation, route }) => {
         }
     }, [paymentmethodvalue]);
 
-    const listupi = async () => {
-        const url = `${Constant.URL}${Constant.OtherURL.list_upi}`;
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
+    // const listupi = async () => {
+    //     const url = `${Constant.URL}${Constant.OtherURL.list_upi}`;
+    //     const response = await fetch(url, {
+    //         method: 'POST',
+    //         headers: {
+    //             'Content-Type': 'application/json',
+    //         },
+    //         body: JSON.stringify({
 
-            }),
-        });
-        const result = await response.json();
-        if (result.code == "200") {
-            setUpiList(result.payload);
-        } else {
-            setUpiList([]);
-            console.log('error while listing upi');
-        }
-    };
+    //         }),
+    //     });
+    //     const result = await response.json();
+    //     if (result.code == "200") {
+    //         setUpiList(result.payload);
+    //     } else {
+    //         setUpiList([]);
+    //         console.log('error while listing upi');
+    //     }
+    // };
 
     const [expandedIndex, setExpandedIndex] = useState(null);
     const animations = useRef({}).current; // Store animated values for each index
@@ -303,85 +303,85 @@ const PurchaseDetails = ({ navigation, route }) => {
     //     }
     // };
 
-    useFocusEffect(
-        React.useCallback(() => {
+    // useFocusEffect(
+    //     React.useCallback(() => {
 
-            fetchusertype();
-            listupi();
-            listpayments();
-        }, [])
-    );
+    //         fetchusertype();
+    //         listupi();
+    //         listpayments();
+    //     }, [])
+    // );
 
     const hasCategoryPermissions = permissions['Orders'] || {};
     const hasPermissions = permissions['Customers'] || {};
 
-    const fetchusertype = async () => {
-        setLoading(true);
-        const id = await AsyncStorage.getItem('admin_id');
+    // const fetchusertype = async () => {
+    //     setLoading(true);
+    //     const id = await AsyncStorage.getItem('admin_id');
 
-        const url = `${Constant.URL}${Constant.OtherURL.fetch_usertype}`;
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: id }),
-        });
-        const result = await response.json();
-        if (result.code == "200") {
-            setUsertype(result.payload.user_type)
-        } else {
-            console.log('Error fetching permissions');
-        }
-        setLoading(false);
-    };
+    //     const url = `${Constant.URL}${Constant.OtherURL.fetch_usertype}`;
+    //     const response = await fetch(url, {
+    //         method: 'POST',
+    //         headers: { 'Content-Type': 'application/json' },
+    //         body: JSON.stringify({ user_id: id }),
+    //     });
+    //     const result = await response.json();
+    //     if (result.code == "200") {
+    //         setUsertype(result.payload.user_type)
+    //     } else {
+    //         console.log('Error fetching permissions');
+    //     }
+    //     setLoading(false);
+    // };
 
     const [error, setError] = useState(null);
 
-    const paytransportcharge = async () => {
-        if (!transportpayvalue) {
-            setError('Payment mode is required');
-            return;
-        }
-        setLoading(true);
-        const transportpaylabel = transportpayitems.find(item => item.value == transportpayvalue)?.label || '';
+    // const paytransportcharge = async () => {
+    //     if (!transportpayvalue) {
+    //         setError('Payment mode is required');
+    //         return;
+    //     }
+    //     setLoading(true);
+    //     const transportpaylabel = transportpayitems.find(item => item.value == transportpayvalue)?.label || '';
 
-        const url = `${Constant.URL}${Constant.OtherURL.transport_charge_add}`;
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                order_no: order_no,
-                payment_mode: transportpaylabel,
-                payment_status: 'Paid'
-            }),
-        });
-        const result = await response.json();
-        if (result.code == "200") {
-            fetchorderdetails();
-            setTransportmodal(false);
-            setTransportpayValue(null);
-        } else {
-            console.log('Error fetching permissions');
-        }
-        setLoading(false);
-    };
+    //     const url = `${Constant.URL}${Constant.OtherURL.transport_charge_add}`;
+    //     const response = await fetch(url, {
+    //         method: 'POST',
+    //         headers: { 'Content-Type': 'application/json' },
+    //         body: JSON.stringify({
+    //             order_no: order_no,
+    //             payment_mode: transportpaylabel,
+    //             payment_status: 'Paid'
+    //         }),
+    //     });
+    //     const result = await response.json();
+    //     if (result.code == "200") {
+    //         fetchorderdetails();
+    //         setTransportmodal(false);
+    //         setTransportpayValue(null);
+    //     } else {
+    //         console.log('Error fetching permissions');
+    //     }
+    //     setLoading(false);
+    // };
 
-    const fetcholdduepayments = async () => {
-        setLoading(true);
-        const url = `${Constant.URL}${Constant.OtherURL.old_due_payment}`;
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ customer_id: customerId, order_no: order_no }),
-        });
-        const result = await response.json();
-        if (result.code == "200") {
-            setDuepaymentlist(result.payload)
-        } else {
-            setDuepaymentlist([]);
-            console.log('Error fetching old payment list');
-        }
-        setLoading(false);
-    };
+    // const fetcholdduepayments = async () => {
+    //     setLoading(true);
+    //     const url = `${Constant.URL}${Constant.OtherURL.old_due_payment}`;
+    //     const response = await fetch(url, {
+    //         method: 'POST',
+    //         headers: { 'Content-Type': 'application/json' },
+    //         body: JSON.stringify({ customer_id: customerId, order_no: order_no }),
+    //     });
+    //     const result = await response.json();
+    //     if (result.code == "200") {
+    //         setDuepaymentlist(result.payload)
+    //     } else {
+    //         setDuepaymentlist([]);
+    //         console.log('Error fetching old payment list');
+    //     }
+    //     setLoading(false);
+    // };
 
     const [oldpayerrors, setOldpayErrors] = useState({});
 
@@ -406,48 +406,48 @@ const PurchaseDetails = ({ navigation, route }) => {
         return valid;
     };
 
-    const addoldpayment = async (order_no, dueAmount) => {
-        if (!validatePayment(order_no, dueAmount)) {
-            return;
-        }
-        setMainloading(true);
-        const id = await AsyncStorage.getItem('admin_id');
-        const paymentMethodLabel = paydueamtmethoditems?.find(item => item.value == paydueamtmethodvalue[order_no])?.label || '';
+    // const addoldpayment = async (order_no, dueAmount) => {
+    //     if (!validatePayment(order_no, dueAmount)) {
+    //         return;
+    //     }
+    //     setMainloading(true);
+    //     const id = await AsyncStorage.getItem('admin_id');
+    //     const paymentMethodLabel = paydueamtmethoditems?.find(item => item.value == paydueamtmethodvalue[order_no])?.label || '';
 
-        const url = `${Constant.URL}${Constant.OtherURL.payment}`;
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                c_id: customerId,
-                user_id: id,
-                order_no: order_no,
-                payment_amount: paydueamt[order_no],
-                payment_mode: paymentMethodLabel,
-                remark: '',
-                status: 'Delivered',
-            }),
-        });
-        const result = await response.json();
-        if (result.code == "200") {
-            setPaydueamt((prev) => ({ ...prev, [order_no]: '' }));
-            setPaydueamtMethodValue((prev) => ({ ...prev, [order_no]: null }));
-            fetcholdduepayments();
-            fetchorderdetails();
-        } else {
-            //   setOrderDetails([]);
-            console.log('error while adding old payment');
-        }
-        setMainloading(false);
-    };
+    //     const url = `${Constant.URL}${Constant.OtherURL.payment}`;
+    //     const response = await fetch(url, {
+    //         method: 'POST',
+    //         headers: {
+    //             'Content-Type': 'application/json',
+    //         },
+    //         body: JSON.stringify({
+    //             c_id: customerId,
+    //             user_id: id,
+    //             order_no: order_no,
+    //             payment_amount: paydueamt[order_no],
+    //             payment_mode: paymentMethodLabel,
+    //             remark: '',
+    //             status: 'Delivered',
+    //         }),
+    //     });
+    //     const result = await response.json();
+    //     if (result.code == "200") {
+    //         setPaydueamt((prev) => ({ ...prev, [order_no]: '' }));
+    //         setPaydueamtMethodValue((prev) => ({ ...prev, [order_no]: null }));
+    //         fetcholdduepayments();
+    //         fetchorderdetails();
+    //     } else {
+    //         //   setOrderDetails([]);
+    //         console.log('error while adding old payment');
+    //     }
+    //     setMainloading(false);
+    // };
 
-    useFocusEffect(
-        React.useCallback(() => {
-            fetcholdduepayments();
-        }, [customerId])
-    );
+    // useFocusEffect(
+    //     React.useCallback(() => {
+    //         fetcholdduepayments();
+    //     }, [customerId])
+    // );
 
     const fetchorderdetails = async () => {
         setMainloading(true);
@@ -481,7 +481,7 @@ const PurchaseDetails = ({ navigation, route }) => {
                 value: mode
             }));
             // setPaymentMethodItems(paymentOptions);
-            await filterPaymentMethods(paymentOptions);
+            // await filterPaymentMethods(paymentOptions);
         } else {
             //   setOrderDetails([]);
             console.log('error while listing product');
@@ -489,50 +489,50 @@ const PurchaseDetails = ({ navigation, route }) => {
         setMainloading(false);
     };
 
-    const filterPaymentMethods = async (paymentOptions) => {
-        const id = await AsyncStorage.getItem('admin_id');
+    // const filterPaymentMethods = async (paymentOptions) => {
+    //     const id = await AsyncStorage.getItem('admin_id');
 
-        const url = `${Constant.URL}${Constant.OtherURL.permision_list}`;
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: id }),
-        });
-        const result = await response.json();
+    //     const url = `${Constant.URL}${Constant.OtherURL.permision_list}`;
+    //     const response = await fetch(url, {
+    //         method: 'POST',
+    //         headers: { 'Content-Type': 'application/json' },
+    //         body: JSON.stringify({ user_id: id }),
+    //     });
+    //     const result = await response.json();
 
-        if (result.code == "200") {
-            const permissionsList = result.payload;
+    //     if (result.code == "200") {
+    //         const permissionsList = result.payload;
 
-            // Find payment type permissions
-            const paymentTypePermission = permissionsList.find(item => item.menu_name == "Payment Type");
-            let allowedPayments = paymentTypePermission ? paymentTypePermission.menu_permission.split(',').map(p => p.trim().toLowerCase()) : [];
-            console.log("abc", allowedPayments);
+    //         // Find payment type permissions
+    //         const paymentTypePermission = permissionsList.find(item => item.menu_name == "Payment Type");
+    //         let allowedPayments = paymentTypePermission ? paymentTypePermission.menu_permission.split(',').map(p => p.trim().toLowerCase()) : [];
+    //         console.log("abc", allowedPayments);
 
 
-            // If UPI is in the list but no UPI ID is available, remove it from allowedPayments
-            const hasUpiPermission = allowedPayments.includes("Upi");
-            console.log(hasUpiPermission);
-            console.log(upilist);
-            if (hasUpiPermission && (!upilist || upilist.length == 0)) {
-                allowedPayments = allowedPayments.filter(p => p != "Upi");
-            }
+    //         // If UPI is in the list but no UPI ID is available, remove it from allowedPayments
+    //         const hasUpiPermission = allowedPayments.includes("Upi");
+    //         console.log(hasUpiPermission);
+    //         console.log(upilist);
+    //         if (hasUpiPermission && (!upilist || upilist.length == 0)) {
+    //             allowedPayments = allowedPayments.filter(p => p != "Upi");
+    //         }
 
-            // Filter payment options based on allowed permissions
-            const filteredPaymentOptions = paymentOptions.filter(option => allowedPayments.includes(option.value.toLowerCase()));
-            console.log(filteredPaymentOptions);
+    //         // Filter payment options based on allowed permissions
+    //         const filteredPaymentOptions = paymentOptions.filter(option => allowedPayments.includes(option.value.toLowerCase()));
+    //         console.log(filteredPaymentOptions);
 
-            setPaymentMethodItems(filteredPaymentOptions);
-            const paydueamtFiltered = filteredPaymentOptions.filter(option => option.value != "Baki");
-            setPaydueamtMethodItems(paydueamtFiltered);
-            setTransportpayItems(paydueamtFiltered);
-        } else {
-            console.log('Error fetching permissions for filtering payment options');
-        }
-    };
+    //         setPaymentMethodItems(filteredPaymentOptions);
+    //         const paydueamtFiltered = filteredPaymentOptions.filter(option => option.value != "Baki");
+    //         setPaydueamtMethodItems(paydueamtFiltered);
+    //         setTransportpayItems(paydueamtFiltered);
+    //     } else {
+    //         console.log('Error fetching permissions for filtering payment options');
+    //     }
+    // };
     useFocusEffect(
         React.useCallback(() => {
             fetchorderdetails();
-        }, [upilist])
+        }, [])
     );
 
     const calculateGrandTotal = () => {
@@ -572,20 +572,26 @@ const PurchaseDetails = ({ navigation, route }) => {
     };
 
     const handleDelete = async () => {
-        const url = `${Constant.URL}${Constant.OtherURL.alldelete_confirmorder}`;
+        const url = `${Constant.URL}${Constant.OtherURL.alldelete_confirmpurchase}`;
         const response = await fetch(url, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                order_no: order_no,
+                purchase_no: order_no,
             }),
         });
         const result = await response.json();
         if (result.code == "200") {
             closeModal();
-            navigation.replace('OrderList');
+            navigation.reset({
+                index: 1,
+                routes: [
+                    { name: 'Dashboard' },  // Keep HomeScreen in the stack
+                    { name: 'Purchaselist' }    // Navigate to Userslist
+                ],
+            });
         } else {
             // Handle error if needed
         }
@@ -595,7 +601,7 @@ const PurchaseDetails = ({ navigation, route }) => {
     const confirmDelete = () => {
         Alert.alert(
             "Delete Order",
-            `Are you sure you want to delete this order?`,
+            `Are you sure you want to delete this Purchase?`,
             [
                 {
                     text: "Cancel",
@@ -778,7 +784,10 @@ const PurchaseDetails = ({ navigation, route }) => {
                                 index: 1,
                                 routes: [
                                     { name: 'Dashboard' },  // Keep HomeScreen in the stack
-                                    { name: 'Purchaselist', params: { order_no, filterdate: formatteddate, filterstatus: valuestatus } }    // Navigate to Userslist
+                                    {
+                                        name: 'Purchaselist',
+                                        //  params: { order_no, filterdate: formatteddate, filterstatus: valuestatus } 
+                                    }    // Navigate to Userslist
                                 ],
                             });
                         }
@@ -1792,7 +1801,7 @@ const PurchaseDetails = ({ navigation, route }) => {
                     </View>
                 </TouchableOpacity>
             </Modal>
-
+            {/* 
             <Modal visible={transportmodal} transparent={true} animationType="slide">
                 <TouchableOpacity onPress={() => { setPaydueamtMethodOpen(false); setTransportpayValue(''); setTransportmodal(false); setTransportpayOpen(false); setError(null); }} style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
                     <View onStartShouldSetResponder={(e) => e.stopPropagation()} style={{ width: '80%', backgroundColor: '#fff', paddingHorizontal: 10, paddingBottom: 20, paddingTop: 20, borderRadius: 10 }}>
@@ -1873,10 +1882,10 @@ const PurchaseDetails = ({ navigation, route }) => {
                         )}
                     </View>
                 </TouchableOpacity>
-            </Modal>
+            </Modal> */}
 
             {/* upi id modal */}
-            <Modal
+            {/* <Modal
                 visible={upiModalVisible}
                 transparent
                 animationType="slide"
@@ -1952,7 +1961,7 @@ const PurchaseDetails = ({ navigation, route }) => {
                         </RadioButton.Group>
                     </View>
                 </TouchableOpacity>
-            </Modal>
+            </Modal> */}
 
             {
                 showQRCode && (

@@ -113,6 +113,8 @@ const Constant = {
         purchase_list: 'purchase/purchase_list.php',
         cancel_purchase: 'purchase/cancel_purchase.php',
         purchase_update_date: 'purchase/purchase_update_date.php',
+        alldelete_confirmpurchase: 'purchase/alldelete_confirmpurchase.php',
+
 
 
         confirm_purchaselist: 'purchase/confirm_purchaselist.php',

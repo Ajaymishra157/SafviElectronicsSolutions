@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Keyboard, ActivityIndicator, TextInput, TouchableWithoutFeedback } from 'react-native'
+import { View, Text, ScrollView, Keyboard, ActivityIndicator, TextInput, TouchableWithoutFeedback, TouchableOpacity } from 'react-native'
 import React, { useState } from 'react'
 import Subheader from '../Commoncomponent/Subheader'
 import DropDownPicker from 'react-native-dropdown-picker'
@@ -12,9 +12,17 @@ const AddUser = ({ navigation, route }) => {
     const [value, setValue] = useState(userdata?.user_type || null);
     const [items, setItems] = useState([
         { label: 'Admin', value: 'Admin' },
-        { label: 'Staff', value: 'Staff' },
-        { label: 'Transporter', value: 'Transporter' },
-        { label: 'Manufacturer', value: 'Manufacturer' },
+        { label: 'Service Engineer', value: 'Service Engineer' },
+        { label: 'Acountant', value: 'Acountant' },
+        { label: 'Technician', value: 'Technician' },
+        { label: 'Helper', value: 'Helper' },
+        { label: 'Half Technician', value: 'Half Technician' },
+        { label: 'Febricator', value: 'Febricator' },
+        { label: 'Office staff', value: 'Office staff' },
+        { label: 'Management', value: 'Management' },
+
+
+
     ]);
 
     const [fname, setFname] = useState(userdata?.first_name || null);
@@ -276,6 +284,45 @@ const AddUser = ({ navigation, route }) => {
                                     backgroundColor: '#fff', marginTop: 3
                                 }}
                                 dropDownDirection='DEFAULT'
+                                // ✅ Custom render for each list item with divider
+                                renderListItem={({ item, index, isSelected }) => (
+                                    <View key={index}>
+                                        <TouchableOpacity
+                                            style={{
+                                                paddingVertical: 12,
+                                                paddingHorizontal: 15,
+                                                backgroundColor: isSelected ? '#e6f0ff' : '#fff',
+                                            }}
+                                            onPress={() => {
+                                                handleValueChange(item.value);
+                                                setOpen(false);
+                                            }
+
+                                            }
+                                        >
+                                            <Text
+                                                style={{
+                                                    color: '#000',
+                                                    fontFamily: 'Inter-Medium',
+                                                    fontSize: 14,
+                                                }}
+                                            >
+                                                {item.label}
+                                            </Text>
+                                        </TouchableOpacity>
+
+                                        {/* Divider line except for last item */}
+                                        {index < items.length - 1 && (
+                                            <View
+                                                style={{
+                                                    height: 1,
+                                                    backgroundColor: '#E0E0E0',
+                                                    marginHorizontal: 10,
+                                                }}
+                                            />
+                                        )}
+                                    </View>
+                                )}
                             />
                         </View>
                         {errors.role ? <Text style={{ color: 'red', fontSize: 12, fontFamily: 'Inter-Regular', marginLeft: 10 }}>{errors.role}</Text> : null}
@@ -313,8 +360,8 @@ const AddUser = ({ navigation, route }) => {
                         </View>
                     </ScrollView>
                 </View>
-            </View>
-        </TouchableWithoutFeedback>
+            </View >
+        </TouchableWithoutFeedback >
         // </Pressable>
         // </KeyboardAvoidingView> 
     )

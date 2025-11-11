@@ -13,6 +13,9 @@ const AddService = () => {
     const passedOrderId = route.params?.orderId || null;
     const passedOrderNo = route.params?.orderNo || null;
     const passedCustomerId = route.params?.customerid || null;
+    const staffName = route.params?.staffName || null;
+    console.log("staff Name ye hai", staffName);
+
 
 
 
@@ -28,7 +31,7 @@ const AddService = () => {
     const [orderNo, setOrderNo] = useState(passedOrderNo || '');
 
     const passedCustomerName = route.params?.customerName || null;
-    console.log("passed customer name", passedCustomerName);
+
 
     const [serviceName, setServiceName] = useState(editService ? editService.service_name : '');
     const [amount, setAmount] = useState(editService ? editService.service_amount : '');
@@ -446,7 +449,7 @@ const AddService = () => {
                                 fontSize: 15,
                                 marginBottom: 4,
                             }}>
-                                Customer: {passedCustomerName}
+                                Customer Name: {passedCustomerName}
                             </Text>
                             {orderNo ? (
                                 <Text style={{
@@ -457,6 +460,16 @@ const AddService = () => {
                                     Order No: {orderNo}
                                 </Text>
                             ) : null}
+                            {staffName ? (
+                                <Text style={{
+                                    fontFamily: 'Inter-Medium',
+                                    color: '#555',
+                                    fontSize: 13,
+                                }}>
+                                    Staff Name: {staffName}
+                                </Text>
+                            ) : null}
+
                         </View>
                     )}
 

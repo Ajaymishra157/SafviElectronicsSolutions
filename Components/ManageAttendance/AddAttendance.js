@@ -3,10 +3,15 @@ import React, { useEffect, useState } from 'react'
 import AntDesign from 'react-native-vector-icons/AntDesign'
 import ImagePicker from 'react-native-image-crop-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import Constant from '../Commoncomponent/Constant';
+import Geolocation from 'react-native-geolocation-service';
+import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 
-const AddAttendance = ({ navigation }) => {
+
+const AddAttendance = () => {
+    const navigation = useNavigation();
+
     const [location, setLocation] = useState('');
     const [userimg, setUserimg] = useState(null);
     const [attendanceStatus, setAttendanceStatus] = useState(null);
@@ -25,6 +30,62 @@ const AddAttendance = ({ navigation }) => {
     // ✅ Error states
     const [photoError, setPhotoError] = useState('');
     const [attendanceStatusError, setAttendanceStatusError] = useState('');
+
+    const getCurrentLocation = async () => {
+        try {
+            // 1️⃣ Check & request location permission
+            let permissionResult = await check(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
+            if (permissionResult !== RESULTS.GRANTED) {
+                permissionResult = await request(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
+                if (permissionResult !== RESULTS.GRANTED) {
+                    console.log('Permission Denied', 'Please allow location access.');
+                    return;
+                }
+            }
+
+            // 2️⃣ Get current position
+            Geolocation.getCurrentPosition(
+                async (position) => {
+                    const { latitude, longitude } = position.coords;
+                    console.log('Current Coordinates:', latitude, longitude);
+
+                    // 3️⃣ Convert to address using Google Geocoding API (or OpenStreetMap free API)
+                    const apiKey = 'AIzaSyBvoWcgSBGvofFvJi2tPnOyr7mj7Plc1pk'; // ⚠️ Replace this
+                    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`;
+                    const response = await fetch(url);
+                    // console.log("response ye hai location ka", response);
+                    const data = await response.json();
+                    // console.log("data ye hai location ka", data);
+
+
+                    if (data.status == 'OK') {
+                        const address = data.results[0].formatted_address;
+                        console.log('Resolved Address:', address);
+                        setLocation(address);
+                    } else {
+                        setLocation(`${latitude}, ${longitude}`);
+                    }
+                },
+                (error) => {
+                    console.log('Location error:', error);
+                    console.log('Error', 'Unable to get location.');
+                },
+                { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
+            );
+        } catch (e) {
+            console.log('Error fetching location:', e);
+        }
+    };
+
+    useFocusEffect(
+        React.useCallback(() => {
+            console.log('Fetching current location...');
+            getCurrentLocation();
+            checkTodayAttendance();
+        }, [])
+    );
+
+
 
 
     const checkTodayAttendance = async () => {
@@ -200,25 +261,19 @@ const AddAttendance = ({ navigation }) => {
                 setTimeout(() => {
                     checkTodayAttendance();
                 }, 1500);
-                navigation.goBack()
+
 
             } else {
-                Alert.alert('Error', result.message || 'Something went wrong.');
+                console.log(result.message || 'Something went wrong.');
             }
         } catch (error) {
-            Alert.alert('Error', 'Network request failed.');
+            console.log('Network request failed.');
         }
         setLoading(false);
     };
 
-    // Check attendance status when screen loads
-    // Check attendance status when screen loads
-    useFocusEffect(
-        React.useCallback(() => {
-            console.log("🔄 useFocusEffect triggered - checking attendance");
-            checkTodayAttendance();
-        }, [])
-    );
+
+
 
     // For demo purposes - you can remove this when you have real data
     // useEffect(() => {
@@ -232,6 +287,7 @@ const AddAttendance = ({ navigation }) => {
     const currentDate = new Date().toLocaleDateString();
 
     const handleOpenCamera = async () => {
+        getCurrentLocation();
         try {
             Keyboard.dismiss();
             const image = await ImagePicker.openCamera({
@@ -303,8 +359,8 @@ const AddAttendance = ({ navigation }) => {
                     justifyContent: 'space-around',
                     backgroundColor: '#fff',
                     borderRadius: 16,
-                    paddingVertical: 20,
-                    marginBottom: 25,
+                    paddingVertical: 10,
+                    marginBottom: 15,
                     elevation: 2,
                     shadowColor: '#000',
                     shadowOffset: { width: 0, height: 1 },
@@ -359,7 +415,7 @@ const AddAttendance = ({ navigation }) => {
                 <View style={{
                     flexDirection: 'row',
                     backgroundColor: '#fff',
-                    marginBottom: 20,
+                    marginBottom: 12,
                     borderRadius: 12,
                     overflow: 'hidden',
                     elevation: 2,
@@ -377,7 +433,7 @@ const AddAttendance = ({ navigation }) => {
                         style={{
                             flex: 1,
                             backgroundColor: attendanceStatus == 'IN' ? '#173161' : '#f8f9fa',
-                            paddingVertical: 15,
+                            paddingVertical: 12,
                             alignItems: 'center',
                             opacity: isInDisabled ? 0.5 : 1
                         }}
@@ -399,7 +455,7 @@ const AddAttendance = ({ navigation }) => {
                         style={{
                             flex: 1,
                             backgroundColor: attendanceStatus == 'OUT' ? '#173161' : '#f8f9fa',
-                            paddingVertical: 15,
+                            paddingVertical: 12,
                             alignItems: 'center',
                             opacity: isOutDisabled ? 0.5 : 1
                         }}
@@ -426,27 +482,33 @@ const AddAttendance = ({ navigation }) => {
                 ) : null}
 
                 {/* Location Input */}
-                <View style={{ marginBottom: 20 }}>
-                    <Text style={{
-                        color: '#333',
-                        fontFamily: 'Roboto-Medium',
-                        fontSize: 14,
-                        marginBottom: 8,
-                        marginLeft: 5
-                    }}>
+                <View style={{ marginBottom: 12 }}>
+                    <Text
+                        style={{
+                            color: '#333',
+                            fontFamily: 'Roboto-Medium',
+                            fontSize: 14,
+                            marginBottom: 8,
+                            marginLeft: 5,
+                        }}>
                         Location
                     </Text>
+
                     <TextInput
-                        placeholder="Enter your current location"
-                        placeholderTextColor='#999'
+                        placeholder="Fetching your current location..."
+                        placeholderTextColor="#999"
                         value={location}
                         onChangeText={setLocation}
+                        editable={false} // 🔒 read-only
+                        selectTextOnFocus={false}
+                        multiline={true} // ✅ allow multiple lines
+                        textAlignVertical="top" // ✅ align text from top
                         style={{
-                            backgroundColor: '#fff',
+                            backgroundColor: '#f5f5f5',
                             borderRadius: 12,
-                            paddingHorizontal: 16,
+                            paddingHorizontal: 12,
                             paddingVertical: 14,
-                            fontSize: 16,
+                            fontSize: 15,
                             color: '#000',
                             fontFamily: 'Roboto-Regular',
                             elevation: 1,
@@ -454,9 +516,13 @@ const AddAttendance = ({ navigation }) => {
                             shadowOffset: { width: 0, height: 1 },
                             shadowOpacity: 0.05,
                             shadowRadius: 2,
+                            minHeight: 80, // ✅ increases box size for long address
+                            lineHeight: 20, // improves readability
                         }}
                     />
                 </View>
+
+
 
                 {/* Capture Photo Button */}
                 <TouchableOpacity
@@ -464,31 +530,36 @@ const AddAttendance = ({ navigation }) => {
                     style={{
                         backgroundColor: userimg ? '#e8f5e8' : '#f0f8ff',
                         borderRadius: 20,
-                        padding: 25,
+                        padding: 5,
                         justifyContent: 'center',
                         alignItems: 'center',
-                        marginBottom: 20,
+                        marginBottom: 10,
                         elevation: 3,
                         shadowColor: '#000',
                         shadowOffset: { width: 0, height: 2 },
                         shadowOpacity: 0.1,
                         shadowRadius: 4,
                         borderWidth: 2,
-                        borderColor: userimg ? '#28a745' : '#173161',
+                        borderColor: photoError
+                            ? 'red'
+                            : userimg
+                                ? '#28a745'
+                                : '#173161',
                         borderStyle: 'dashed',
                     }}>
                     <View style={{
-                        width: 80,
-                        height: 80,
+                        width: 50,
+                        height: 50,
                         borderRadius: 40,
                         backgroundColor: userimg ? '#28a745' : '#173161',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        marginBottom: 15,
+                        marginBottom: 8,
+                        marginTop: 8,
                         elevation: 2,
                     }}>
                         <Text style={{ fontSize: 32, color: '#fff' }}>
-                            {userimg ? '✅' : '📷'}
+                            {userimg ? '✅' : '+'}
                         </Text>
                     </View>
                     <Text style={{
@@ -549,9 +620,9 @@ const AddAttendance = ({ navigation }) => {
                 {/* Submit Button */}
                 {loading ? (
                     <View style={{
-                        backgroundColor: '#1a1a1a',
+                        backgroundColor: '#173161',
                         borderRadius: 12,
-                        paddingVertical: 16,
+                        paddingVertical: 12,
                         marginTop: 10
                     }}>
                         <ActivityIndicator size="large" color="#fff" />
@@ -561,8 +632,8 @@ const AddAttendance = ({ navigation }) => {
                         disabled={!attendanceStatus} // ✅ Sirf attendanceStatus check karo
                         onPress={markattendance}
                         style={{
-                            backgroundColor: !attendanceStatus ? '#ccc' : '#1a1a1a', // ✅ Sirf attendanceStatus ke hisab se color
-                            paddingVertical: 16,
+                            backgroundColor: !attendanceStatus ? '#ccc' : '#173161', // ✅ Sirf attendanceStatus ke hisab se color
+                            paddingVertical: 15,
                             borderRadius: 12,
                             alignItems: 'center',
                             marginTop: 10,
@@ -576,7 +647,7 @@ const AddAttendance = ({ navigation }) => {
                         <Text style={{
                             color: !attendanceStatus ? '#666' : '#fff',
                             fontFamily: 'Roboto-Bold',
-                            fontSize: 16
+                            fontSize: 14
                         }}>
                             Submit Attendance
                         </Text>
@@ -584,9 +655,9 @@ const AddAttendance = ({ navigation }) => {
                 )}
 
                 {/* View Timesheet */}
-                {/* <View style={{ flex: 1, justifyContent: 'flex-end', marginBottom: 10 }}>
+                <View style={{ flex: 1, justifyContent: 'flex-end', marginBottom: 10 }}>
                     <TouchableOpacity
-                        onPress={() => navigation.navigate('Listattendance')}
+                        onPress={() => navigation.navigate('AttendanceList')}
                         style={{
                             paddingVertical: 12,
                             alignItems: 'center'
@@ -602,7 +673,7 @@ const AddAttendance = ({ navigation }) => {
                             📊 View Timesheet
                         </Text>
                     </TouchableOpacity>
-                </View> */}
+                </View>
             </View>
         </ScrollView>
     )

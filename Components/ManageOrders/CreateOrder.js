@@ -706,6 +706,7 @@ const CreateOrder = ({ navigation }) => {
     const handleConfirmOrder = () => {
         if (order_no) {
             updateorder();
+
         } else if (isFestiveChecked) {
             confirmorderfestive();
         } else {
@@ -818,6 +819,8 @@ const CreateOrder = ({ navigation }) => {
             setModalVisible(false);
             setTransport_remark(null);
             setTransport_amt(null);
+            setRemark('');
+
         } else {
             console.log('error while creating order');
         } setMainloading(false);
@@ -904,6 +907,7 @@ const CreateOrder = ({ navigation }) => {
             setModalVisible(false);
             setTransport_remark(null);
             setTransport_amt(null);
+            setRemark('');
         } else {
             console.log('error while creating order');
         } setMainloading(false);
@@ -966,6 +970,7 @@ const CreateOrder = ({ navigation }) => {
                 ],
             });
             setModalVisible(false);
+            setRemark('');
         } else {
             console.log('error while creating order');
         } setMainloading(false);
@@ -1009,6 +1014,7 @@ const CreateOrder = ({ navigation }) => {
             setTotal(null);
             setUpdateMode(false);
             setselecteduserid(null);
+            setRemark('');
 
         } else {
             console.log('error while updating order product');

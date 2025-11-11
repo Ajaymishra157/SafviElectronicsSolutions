@@ -15,6 +15,8 @@ import {
 import DropDownPicker from 'react-native-dropdown-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Constant from '../Commoncomponent/Constant';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
 
 const AttendanceList = ({ navigation }) => {
     const [openUser, setOpenUser] = useState(false);
@@ -36,47 +38,73 @@ const AttendanceList = ({ navigation }) => {
         return date.toISOString().split('T')[0];
     };
 
+    const formatDatefordisplay = (date) => {
+        if (!date) return '';
+        const d = new Date(date);
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+        return `${day}-${month}-${year}`;
+    };
+
+
+    useEffect(() => {
+        const loadUserId = async () => {
+            try {
+                const id = await AsyncStorage.getItem('admin_id');
+                if (id) {
+                    setUserId(id);
+                    console.log("Logged-in User ID:", id);
+                }
+            } catch (error) {
+                console.log("Error fetching admin_id:", error);
+            }
+        };
+
+        loadUserId();
+    }, []);
+
 
     // Fetch Staff
-    const listUsers = async () => {
-        console.log("listuser wali api hai", userId)
-        try {
-            const url = `${Constant.URL}${Constant.OtherURL.user_list}`;
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-            });
-            const result = await response.json();
-            console.log(" result api hai main staff ke andar", result)
-            if (result.code == '200') {
-                const formatted = result.Payload.map(item => ({
-                    label: item.first_name,
-                    value: String(item.userid),
-                }));
+    // const listUsers = async () => {
+    //     console.log("listuser wali api hai", userId)
+    //     try {
+    //         const url = `${Constant.URL}${Constant.OtherURL.user_list}`;
+    //         const response = await fetch(url, {
+    //             method: 'POST',
+    //             headers: { 'Content-Type': 'application/json' },
+    //         });
+    //         const result = await response.json();
+    //         console.log(" result api hai main staff ke andar", result)
+    //         if (result.code == '200') {
+    //             const formatted = result.Payload.map(item => ({
+    //                 label: item.first_name,
+    //                 value: String(item.userid),
+    //             }));
 
-                // ✅ "All" option add karo
-                const allOption = {
-                    label: "All Staff",
-                    value: null  // null value for all staff
-                };
+    //             // ✅ "All" option add karo
+    //             const allOption = {
+    //                 label: "All Staff",
+    //                 value: null  // null value for all staff
+    //             };
 
-                setUserList([allOption, ...formatted]);
-            } else {
-                // ✅ Even if API fails, "All" option show karo
-                setUserList([{
-                    label: "All Staff",
-                    value: null
-                }]);
-            }
-        } catch (error) {
-            console.log('Network error in listUsers:', error);
-            // ✅ Network error mein bhi "All" option show karo
-            setUserList([{
-                label: "All Staff",
-                value: null
-            }]);
-        }
-    };
+    //             setUserList([allOption, ...formatted]);
+    //         } else {
+    //             // ✅ Even if API fails, "All" option show karo
+    //             setUserList([{
+    //                 label: "All Staff",
+    //                 value: null
+    //             }]);
+    //         }
+    //     } catch (error) {
+    //         console.log('Network error in listUsers:', error);
+    //         // ✅ Network error mein bhi "All" option show karo
+    //         setUserList([{
+    //             label: "All Staff",
+    //             value: null
+    //         }]);
+    //     }
+    // };
 
     // Fetch Attendance with date filter
     const fetchAttendanceList = async (selectedId = userId) => {
@@ -114,8 +142,11 @@ const AttendanceList = ({ navigation }) => {
 
     const onRefresh = useCallback(() => {
         setRefreshing(true);
+        const today = new Date();
+        setStartDate(today);
+        setEndDate(today);
         fetchAttendanceList().then(() => setRefreshing(false));
-    }, [userId, startDate, endDate]);
+    }, [userId]);
 
     // Apply date filter
     const applyDateFilter = () => {
@@ -127,30 +158,47 @@ const AttendanceList = ({ navigation }) => {
     // Reset date filter
     const resetDateFilter = () => {
         const today = new Date();
-        const oneWeekAgo = new Date();
-        oneWeekAgo.setDate(today.getDate() - 7);
+        // const oneWeekAgo = new Date();
+        // oneWeekAgo.setDate(today.getDate() - 7);
 
-        setStartDate(oneWeekAgo);
+        setStartDate(today);
         setEndDate(today);
         setShowDateFilter(false);
         fetchAttendanceList();
     };
 
-    useEffect(() => {
-        listUsers();
-        // Set default date range (last 7 days)
-        const today = new Date();
-        const oneWeekAgo = new Date();
-        oneWeekAgo.setDate(today.getDate() - 7);
-        setStartDate(oneWeekAgo);
-        setEndDate(today);
-        fetchAttendanceList();
-    }, []);
+    // useEffect(() => {
+    //     // listUsers();
+    //     // Set default date range (last 7 days)
+    //     const today = new Date();
+    //     const oneWeekAgo = new Date();
+    //     oneWeekAgo.setDate(today.getDate() - 7);
+    //     setStartDate(oneWeekAgo);
+    //     setEndDate(today);
+    //     fetchAttendanceList();
+    // }, []);
+    useFocusEffect(
+        React.useCallback(() => {
+            const loadData = async () => {
+                const id = await AsyncStorage.getItem('admin_id');
+                if (!id) return; // userId na ho to kuch mat karo
 
-    useEffect(() => {
-        // ✅ Har bar call karo, chahe userId null ho ya kuch bhi ho
-        fetchAttendanceList(userId);
-    }, [userId]);
+                setUserId(id);
+                const today = new Date();
+                setStartDate(today);
+                setEndDate(today);
+
+                // ✅ Abhi ID mil gayi to safe API call
+                fetchAttendanceList(id);
+            };
+            loadData();
+        }, [])
+    );
+
+    // useEffect(() => {
+    //     // ✅ Har bar call karo, chahe userId null ho ya kuch bhi ho
+    //     fetchAttendanceList(userId);
+    // }, [userId]);
 
     const renderAttendanceItem = ({ item }) => (
         <View
@@ -201,7 +249,7 @@ const AttendanceList = ({ navigation }) => {
                         {item.staffname || 'Unknown Staff'}
                     </Text>
                     <Text style={{ fontFamily: 'Inter-Regular', color: '#666', fontSize: 12 }}>
-                        Date: {item.date}
+                        Date: {formatDatefordisplay(item.date)}
                     </Text>
                 </View>
             </View>
@@ -257,7 +305,7 @@ const AttendanceList = ({ navigation }) => {
                             Recorded:
                         </Text>
                         <Text style={{ fontFamily: 'Inter-Regular', color: '#666', fontSize: 10 }}>
-                            {dateItem.entrydate}
+                            {formatDatefordisplay(dateItem.entrydate)}
                         </Text>
                     </View>
                 </View>
@@ -307,7 +355,7 @@ const AttendanceList = ({ navigation }) => {
             {/* Date Filter Display */}
             <View style={{ paddingHorizontal: 15, paddingVertical: 10, flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: '#666' }}>
-                    {formatDate(startDate)} to {formatDate(endDate)}
+                    {formatDatefordisplay(startDate)} to {formatDatefordisplay(endDate)}
                 </Text>
                 <TouchableOpacity onPress={() => setShowDateFilter(true)}>
                     <Text style={{ fontFamily: 'Inter-Medium', fontSize: 12, color: '#173161' }}>
@@ -399,7 +447,7 @@ const AttendanceList = ({ navigation }) => {
             )}
 
             {/* Add Attendance Button */}
-            <View style={{
+            {/* <View style={{
                 position: 'absolute',
                 bottom: 15,
                 alignSelf: 'center',
@@ -440,7 +488,7 @@ const AttendanceList = ({ navigation }) => {
                         Add Attendance
                     </Text>
                 </TouchableOpacity>
-            </View>
+            </View> */}
 
             {/* Date Filter Modal */}
             <Modal
@@ -451,7 +499,7 @@ const AttendanceList = ({ navigation }) => {
             >
                 <View style={{ flex: 1, justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
                     <View style={{ margin: 20, backgroundColor: 'white', borderRadius: 15, padding: 20 }}>
-                        <Text style={{ fontFamily: 'Inter-Bold', fontSize: 18, marginBottom: 20, textAlign: 'center' }}>
+                        <Text style={{ fontFamily: 'Inter-Bold', fontSize: 18, marginBottom: 20, textAlign: 'center', color: 'black' }}>
                             Filter by Date
                         </Text>
 
@@ -470,8 +518,8 @@ const AttendanceList = ({ navigation }) => {
                                     backgroundColor: '#f9f9f9',
                                 }}
                             >
-                                <Text style={{ fontFamily: 'Inter-Regular' }}>
-                                    {formatDate(startDate)}
+                                <Text style={{ fontFamily: 'Inter-Regular', color: 'black' }}>
+                                    {formatDatefordisplay(startDate)}
                                 </Text>
                             </TouchableOpacity>
                         </View>
@@ -491,8 +539,8 @@ const AttendanceList = ({ navigation }) => {
                                     backgroundColor: '#f9f9f9',
                                 }}
                             >
-                                <Text style={{ fontFamily: 'Inter-Regular' }}>
-                                    {formatDate(endDate)}
+                                <Text style={{ fontFamily: 'Inter-Regular', color: 'black' }}>
+                                    {formatDatefordisplay(endDate)}
                                 </Text>
                             </TouchableOpacity>
                         </View>
@@ -503,6 +551,7 @@ const AttendanceList = ({ navigation }) => {
                                 value={startDate}
                                 mode="date"
                                 display="default"
+                                maximumDate={new Date()}
                                 onChange={(event, selectedDate) => {
                                     setShowStartDatePicker(false);
                                     if (selectedDate) {
@@ -517,6 +566,8 @@ const AttendanceList = ({ navigation }) => {
                                 value={endDate}
                                 mode="date"
                                 display="default"
+                                minimumDate={startDate} // 🚫 can't go before start date
+                                maximumDate={new Date()}
                                 onChange={(event, selectedDate) => {
                                     setShowEndDatePicker(false);
                                     if (selectedDate) {
@@ -529,7 +580,10 @@ const AttendanceList = ({ navigation }) => {
                         {/* Action Buttons */}
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                             <TouchableOpacity
-                                onPress={resetDateFilter}
+                                // onPress={resetDateFilter}
+                                onPress={() => {
+                                    setShowDateFilter(false);
+                                }}
                                 style={{
                                     flex: 1,
                                     padding: 12,
@@ -540,7 +594,7 @@ const AttendanceList = ({ navigation }) => {
                                 }}
                             >
                                 <Text style={{ color: 'white', fontFamily: 'Inter-Medium' }}>
-                                    Reset
+                                    Cancel
                                 </Text>
                             </TouchableOpacity>
                             <TouchableOpacity

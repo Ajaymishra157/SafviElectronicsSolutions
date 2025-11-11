@@ -1,5 +1,5 @@
 import { View, Text, Image, TouchableOpacity, ScrollView, ActivityIndicator, Modal, Alert, StatusBar } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import MyButton from '../Commoncomponent/MyButton'
 import { useFocusEffect } from '@react-navigation/native'
 import Constant from '../Commoncomponent/Constant'
@@ -18,6 +18,22 @@ const Userslist = ({ navigation }) => {
     const [permissionlist, setPermissionsList] = useState([]);
     const [permissions, setPermissions] = useState([]);
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const loadUserId = async () => {
+            try {
+                const id = await AsyncStorage.getItem('admin_id');
+                if (id) {
+                    setUserId(id);
+                    console.log("Logged-in User ID:", id);
+                }
+            } catch (error) {
+                console.log("Error fetching admin_id:", error);
+            }
+        };
+
+        loadUserId();
+    }, []);
 
     // const listPermissions = async () => {
     //     setMainloading(true);

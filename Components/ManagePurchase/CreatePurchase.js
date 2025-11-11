@@ -912,6 +912,7 @@ const CreatePurchase = ({ navigation }) => {
             setTotal(null);
             setUpdateMode(false);
             setselecteduserid(null);
+            setRemark('');
         } else {
             console.log('error while updating product 1');
         } setLoading(false);
@@ -1509,6 +1510,7 @@ const CreatePurchase = ({ navigation }) => {
             setModalVisible(false);
             setTransport_remark(null);
             setTransport_amt(null);
+            setRemark('');
         } else {
             console.log('error while creating order');
         } setMainloading(false);
@@ -1571,6 +1573,7 @@ const CreatePurchase = ({ navigation }) => {
                 ],
             });
             setModalVisible(false);
+            setRemark('');
         } else {
             console.log('error while creating order');
         } setMainloading(false);
@@ -1614,6 +1617,7 @@ const CreatePurchase = ({ navigation }) => {
             setTotal(null);
             setUpdateMode(false);
             setselecteduserid(null);
+            setRemark('');
 
         } else {
             console.log('error while updating order product');

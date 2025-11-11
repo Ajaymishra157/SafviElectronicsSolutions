@@ -213,25 +213,25 @@ const OrderDetails = ({ navigation, route }) => {
         }
     }, [paymentmethodvalue]);
 
-    const listupi = async () => {
-        const url = `${Constant.URL}${Constant.OtherURL.list_upi}`;
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
+    // const listupi = async () => {
+    //     const url = `${Constant.URL}${Constant.OtherURL.list_upi}`;
+    //     const response = await fetch(url, {
+    //         method: 'POST',
+    //         headers: {
+    //             'Content-Type': 'application/json',
+    //         },
+    //         body: JSON.stringify({
 
-            }),
-        });
-        const result = await response.json();
-        if (result.code == "200") {
-            setUpiList(result.payload);
-        } else {
-            setUpiList([]);
-            console.log('error while listing upi');
-        }
-    };
+    //         }),
+    //     });
+    //     const result = await response.json();
+    //     if (result.code == "200") {
+    //         setUpiList(result.payload);
+    //     } else {
+    //         setUpiList([]);
+    //         console.log('error while listing upi');
+    //     }
+    // };
 
     const [expandedIndex, setExpandedIndex] = useState(null);
     const animations = useRef({}).current; // Store animated values for each index
@@ -302,14 +302,14 @@ const OrderDetails = ({ navigation, route }) => {
     //     }
     // };
 
-    useFocusEffect(
-        React.useCallback(() => {
+    // useFocusEffect(
+    //     React.useCallback(() => {
 
-            fetchusertype();
-            listupi();
-            listpayments();
-        }, [])
-    );
+    //         fetchusertype();
+    //         // listupi();
+    //         listpayments();
+    //     }, [])
+    // );
 
     const hasCategoryPermissions = permissions['Orders'] || {};
     const hasPermissions = permissions['Customers'] || {};
@@ -364,23 +364,23 @@ const OrderDetails = ({ navigation, route }) => {
         setLoading(false);
     };
 
-    const fetcholdduepayments = async () => {
-        setLoading(true);
-        const url = `${Constant.URL}${Constant.OtherURL.old_due_payment}`;
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ customer_id: customerId, order_no: order_no }),
-        });
-        const result = await response.json();
-        if (result.code == "200") {
-            setDuepaymentlist(result.payload)
-        } else {
-            setDuepaymentlist([]);
-            console.log('Error fetching old payment list');
-        }
-        setLoading(false);
-    };
+    // const fetcholdduepayments = async () => {
+    //     setLoading(true);
+    //     const url = `${Constant.URL}${Constant.OtherURL.old_due_payment}`;
+    //     const response = await fetch(url, {
+    //         method: 'POST',
+    //         headers: { 'Content-Type': 'application/json' },
+    //         body: JSON.stringify({ customer_id: customerId, order_no: order_no }),
+    //     });
+    //     const result = await response.json();
+    //     if (result.code == "200") {
+    //         setDuepaymentlist(result.payload)
+    //     } else {
+    //         setDuepaymentlist([]);
+    //         console.log('Error fetching old payment list');
+    //     }
+    //     setLoading(false);
+    // };
 
     const [oldpayerrors, setOldpayErrors] = useState({});
 
@@ -433,7 +433,7 @@ const OrderDetails = ({ navigation, route }) => {
         if (result.code == "200") {
             setPaydueamt((prev) => ({ ...prev, [order_no]: '' }));
             setPaydueamtMethodValue((prev) => ({ ...prev, [order_no]: null }));
-            fetcholdduepayments();
+            // fetcholdduepayments();
             fetchorderdetails();
         } else {
             //   setOrderDetails([]);
@@ -442,11 +442,11 @@ const OrderDetails = ({ navigation, route }) => {
         setMainloading(false);
     };
 
-    useFocusEffect(
-        React.useCallback(() => {
-            fetcholdduepayments();
-        }, [customerId])
-    );
+    // useFocusEffect(
+    //     React.useCallback(() => {
+    //         fetcholdduepayments();
+    //     }, [customerId])
+    // );
 
     const fetchorderdetails = async () => {
         setMainloading(true);
@@ -480,7 +480,7 @@ const OrderDetails = ({ navigation, route }) => {
                 value: mode
             }));
             // setPaymentMethodItems(paymentOptions);
-            await filterPaymentMethods(paymentOptions);
+            // await filterPaymentMethods(paymentOptions);
         } else {
             //   setOrderDetails([]);
             console.log('error while listing product');
@@ -488,46 +488,46 @@ const OrderDetails = ({ navigation, route }) => {
         setMainloading(false);
     };
 
-    const filterPaymentMethods = async (paymentOptions) => {
-        const id = await AsyncStorage.getItem('admin_id');
+    // const filterPaymentMethods = async (paymentOptions) => {
+    //     const id = await AsyncStorage.getItem('admin_id');
 
-        const url = `${Constant.URL}${Constant.OtherURL.permision_list}`;
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: id }),
-        });
-        const result = await response.json();
+    //     const url = `${Constant.URL}${Constant.OtherURL.permision_list}`;
+    //     const response = await fetch(url, {
+    //         method: 'POST',
+    //         headers: { 'Content-Type': 'application/json' },
+    //         body: JSON.stringify({ user_id: id }),
+    //     });
+    //     const result = await response.json();
 
-        if (result.code == "200") {
-            const permissionsList = result.payload;
+    //     if (result.code == "200") {
+    //         const permissionsList = result.payload;
 
-            // Find payment type permissions
-            const paymentTypePermission = permissionsList.find(item => item.menu_name == "Payment Type");
-            let allowedPayments = paymentTypePermission ? paymentTypePermission.menu_permission.split(',').map(p => p.trim().toLowerCase()) : [];
-            console.log("abc", allowedPayments);
+    //         // Find payment type permissions
+    //         const paymentTypePermission = permissionsList.find(item => item.menu_name == "Payment Type");
+    //         let allowedPayments = paymentTypePermission ? paymentTypePermission.menu_permission.split(',').map(p => p.trim().toLowerCase()) : [];
+    //         console.log("abc", allowedPayments);
 
 
-            // If UPI is in the list but no UPI ID is available, remove it from allowedPayments
-            const hasUpiPermission = allowedPayments.includes("Upi");
-            console.log(hasUpiPermission);
-            console.log(upilist);
-            if (hasUpiPermission && (!upilist || upilist.length == 0)) {
-                allowedPayments = allowedPayments.filter(p => p != "Upi");
-            }
+    //         // If UPI is in the list but no UPI ID is available, remove it from allowedPayments
+    //         const hasUpiPermission = allowedPayments.includes("Upi");
+    //         console.log(hasUpiPermission);
+    //         console.log(upilist);
+    //         if (hasUpiPermission && (!upilist || upilist.length == 0)) {
+    //             allowedPayments = allowedPayments.filter(p => p != "Upi");
+    //         }
 
-            // Filter payment options based on allowed permissions
-            const filteredPaymentOptions = paymentOptions.filter(option => allowedPayments.includes(option.value.toLowerCase()));
-            console.log(filteredPaymentOptions);
+    //         // Filter payment options based on allowed permissions
+    //         const filteredPaymentOptions = paymentOptions.filter(option => allowedPayments.includes(option.value.toLowerCase()));
+    //         console.log(filteredPaymentOptions);
 
-            setPaymentMethodItems(filteredPaymentOptions);
-            const paydueamtFiltered = filteredPaymentOptions.filter(option => option.value != "Baki");
-            setPaydueamtMethodItems(paydueamtFiltered);
-            setTransportpayItems(paydueamtFiltered);
-        } else {
-            console.log('Error fetching permissions for filtering payment options');
-        }
-    };
+    //         setPaymentMethodItems(filteredPaymentOptions);
+    //         const paydueamtFiltered = filteredPaymentOptions.filter(option => option.value != "Baki");
+    //         setPaydueamtMethodItems(paydueamtFiltered);
+    //         setTransportpayItems(paydueamtFiltered);
+    //     } else {
+    //         console.log('Error fetching permissions for filtering payment options');
+    //     }
+    // };
     useFocusEffect(
         React.useCallback(() => {
             fetchorderdetails();
@@ -573,7 +573,13 @@ const OrderDetails = ({ navigation, route }) => {
         const result = await response.json();
         if (result.code == "200") {
             closeModal();
-            navigation.replace('OrderList');
+            navigation.reset({
+                index: 1,
+                routes: [
+                    { name: 'Dashboard' },  // Keep HomeScreen in the stack
+                    { name: 'OrderList' }    // Navigate to Userslist
+                ],
+            });
         } else {
             // Handle error if needed
         }
@@ -634,117 +640,117 @@ const OrderDetails = ({ navigation, route }) => {
         setPaymentModal(true);
     };
 
-    const handleEditpayment = () => {
-        if (selectedentry) {
-            setPaymentMethodValue(selectedentry.payment_mode); // Now store the payment mode
-            setPaidamt(selectedentry.paid_amount);
-            setIsupdatemode(true);
-        }
-        setPaymentModal(false); // Close modal
-    };
+    // const handleEditpayment = () => {
+    //     if (selectedentry) {
+    //         setPaymentMethodValue(selectedentry.payment_mode); // Now store the payment mode
+    //         setPaidamt(selectedentry.paid_amount);
+    //         setIsupdatemode(true);
+    //     }
+    //     setPaymentModal(false); // Close modal
+    // };
 
-    const addpayment = async () => {
-        if (!validateFields()) return;
-        setMainloading(true);
-        const id = await AsyncStorage.getItem('admin_id');
-        const paymentMethodLabel = paymentmethoditems.find(item => item.value == paymentmethodvalue)?.label || '';
+    // const addpayment = async () => {
+    //     if (!validateFields()) return;
+    //     setMainloading(true);
+    //     const id = await AsyncStorage.getItem('admin_id');
+    //     const paymentMethodLabel = paymentmethoditems.find(item => item.value == paymentmethodvalue)?.label || '';
 
-        // Find label for selected status
-        const statusLabel = statusitems.find(item => item.value == statusvalue)?.label || '';
-        const url = `${Constant.URL}${Constant.OtherURL.payment}`;
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                c_id: customerId,
-                user_id: id,
-                order_no: order_no,
-                payment_amount: paidamt,
-                payment_mode: paymentMethodLabel,
-                remark: '',
-                status: statusLabel,
-                upi_id: selectedupiid,
-                redeem_commission: redeemamt
-            }),
-        });
-        const result = await response.json();
-        if (result.code == "200") {
-            setPaidamt(null);
-            setAmount(null);
-            setRedeemamt(null);
-            setPaymentMethodValue(null);
-            setSelectedUpiId(null);
-            setUpilink(null);
-            listpayments();
-            fetchorderdetails();
-            listupi();
-        } else {
-            //   setOrderDetails([]);
-            console.log('error while listing product');
-        }
-        setMainloading(false);
-    };
+    //     // Find label for selected status
+    //     const statusLabel = statusitems.find(item => item.value == statusvalue)?.label || '';
+    //     const url = `${Constant.URL}${Constant.OtherURL.payment}`;
+    //     const response = await fetch(url, {
+    //         method: 'POST',
+    //         headers: {
+    //             'Content-Type': 'application/json',
+    //         },
+    //         body: JSON.stringify({
+    //             c_id: customerId,
+    //             user_id: id,
+    //             order_no: order_no,
+    //             payment_amount: paidamt,
+    //             payment_mode: paymentMethodLabel,
+    //             remark: '',
+    //             status: statusLabel,
+    //             upi_id: selectedupiid,
+    //             redeem_commission: redeemamt
+    //         }),
+    //     });
+    //     const result = await response.json();
+    //     if (result.code == "200") {
+    //         setPaidamt(null);
+    //         setAmount(null);
+    //         setRedeemamt(null);
+    //         setPaymentMethodValue(null);
+    //         setSelectedUpiId(null);
+    //         setUpilink(null);
+    //         listpayments();
+    //         fetchorderdetails();
+    //         // listupi();
+    //     } else {
+    //         //   setOrderDetails([]);
+    //         console.log('error while listing product');
+    //     }
+    //     setMainloading(false);
+    // };
 
-    const updatepayment = async () => {
-        setMainloading(true);
-        const id = await AsyncStorage.getItem('admin_id');
-        const paymentMethodLabel = paymentmethoditems.find(item => item.value == paymentmethodvalue)?.label || '';
+    // const updatepayment = async () => {
+    //     setMainloading(true);
+    //     const id = await AsyncStorage.getItem('admin_id');
+    //     const paymentMethodLabel = paymentmethoditems.find(item => item.value == paymentmethodvalue)?.label || '';
 
-        // Find label for selected status
-        const statusLabel = statusitems.find(item => item.value == statusvalue)?.label || '';
-        const url = `${Constant.URL}${Constant.OtherURL.update_payment}`;
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                payment_id: selectedpaymentid,
-                c_id: customerId,
-                user_id: id,
-                order_no: order_no,
-                payment_amount: paidamt,
-                payment_mode: paymentMethodLabel,
-                remark: '',
-                status: statusLabel,
-            }),
-        });
-        const result = await response.json();
-        if (result.code == "200") {
-            setPaidamt(null);
-            setPaymentMethodValue(null);
-            listpayments();
-            fetchorderdetails();
-            setIsupdatemode(false);
-        } else {
-            //   setOrderDetails([]);
-            console.log('error while listing product');
-        }
-        setMainloading(false);
-    };
+    //     // Find label for selected status
+    //     const statusLabel = statusitems.find(item => item.value == statusvalue)?.label || '';
+    //     const url = `${Constant.URL}${Constant.OtherURL.update_payment}`;
+    //     const response = await fetch(url, {
+    //         method: 'POST',
+    //         headers: {
+    //             'Content-Type': 'application/json',
+    //         },
+    //         body: JSON.stringify({
+    //             payment_id: selectedpaymentid,
+    //             c_id: customerId,
+    //             user_id: id,
+    //             order_no: order_no,
+    //             payment_amount: paidamt,
+    //             payment_mode: paymentMethodLabel,
+    //             remark: '',
+    //             status: statusLabel,
+    //         }),
+    //     });
+    //     const result = await response.json();
+    //     if (result.code == "200") {
+    //         setPaidamt(null);
+    //         setPaymentMethodValue(null);
+    //         listpayments();
+    //         fetchorderdetails();
+    //         setIsupdatemode(false);
+    //     } else {
+    //         //   setOrderDetails([]);
+    //         console.log('error while listing product');
+    //     }
+    //     setMainloading(false);
+    // };
 
-    const listpayments = async () => {
-        const url = `${Constant.URL}${Constant.OtherURL.payment_list}`;
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                order_no: order_no,
-            }),
-        });
-        const result = await response.json();
-        if (result.code == "200") {
-            setPaymentlist(result.payload);
+    // const listpayments = async () => {
+    //     const url = `${Constant.URL}${Constant.OtherURL.payment_list}`;
+    //     const response = await fetch(url, {
+    //         method: 'POST',
+    //         headers: {
+    //             'Content-Type': 'application/json',
+    //         },
+    //         body: JSON.stringify({
+    //             order_no: order_no,
+    //         }),
+    //     });
+    //     const result = await response.json();
+    //     if (result.code == "200") {
+    //         setPaymentlist(result.payload);
 
-        } else {
-            setPaymentlist([]);
-            console.log('error while listing payment');
-        }
-    };
+    //     } else {
+    //         setPaymentlist([]);
+    //         console.log('error while listing payment');
+    //     }
+    // };
 
     if (mainloading) {
         return (
@@ -1378,10 +1384,10 @@ const OrderDetails = ({ navigation, route }) => {
                             borderRadius: 10,
                         }}
                     >
-                        <TouchableOpacity onPress={handleEditpayment} style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+                        {/* <TouchableOpacity onPress={handleEditpayment} style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
                             <Image source={require('../../assets/Edit1.png')} style={{ height: 20, width: 20, tintColor: '#173161' }} />
                             <Text style={{ fontSize: 16, fontFamily: 'Inter-Medium', color: '#173161' }}>Edit</Text>
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
                         {/* <TouchableOpacity onPress={() => { confirmDelete(); setPaymentModal(false); }} style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
                             <Image source={require('../../assets/trash-bin.png')} style={{ height: 20, width: 20, tintColor: '#173161' }} />
                             <Text style={{ fontSize: 16, fontFamily: 'Inter-Medium', color: '#173161' }}>Delete</Text>

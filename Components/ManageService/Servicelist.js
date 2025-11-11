@@ -106,7 +106,7 @@ const Servicelist = ({ navigation }) => {
 
     const handleEdit = () => {
         setModalVisible(false);
-        navigation.navigate('OrderListService', { service: selectedItem, selectedOrderNo: selectedItem.order_no, selectedOrderId: selectedItem.order_id, customerid: selectedItem.customer_id, customerName: selectedItem.customer_name, });
+        navigation.navigate('OrderListService', { service: selectedItem, selectedOrderNo: selectedItem.order_no, selectedOrderId: selectedItem.order_id, customerid: selectedItem.customer_id, customerName: selectedItem.customer_name, staffName: selectedItem.staff_name });
 
     };
 

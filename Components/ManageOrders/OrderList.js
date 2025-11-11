@@ -785,11 +785,11 @@ const OrderList = ({ navigation, route }) => {
                           </View>
                         )}
                       </View>
-                      {(usertype == 'Admin' || usertype == 'Transporter' || (usertype == 'Salesman' && user_id === item.user_id)) && (
-                        <TouchableOpacity onPress={() => navigation.navigate('OrderDetails', { order_no: item.order_no, orderdate: item.order_date, customername: item.full_name, Remark: item.remark, companyname: item.company_name, location_link: item.location_link, orderstatus: item.status, area: item.area, formatteddate, valuestatus, searchTerm: searchTerm })} style={{ paddingHorizontal: 15, paddingVertical: 50 }}>
-                          <Image source={require('../../assets/skip-track.png')} style={{ height: 20, width: 20 }} />
-                        </TouchableOpacity>
-                      )}
+
+                      <TouchableOpacity onPress={() => navigation.navigate('OrderDetails', { order_no: item.order_no, orderdate: item.order_date, customername: item.full_name, Remark: item.remark, companyname: item.company_name, location_link: item.location_link, orderstatus: item.status, area: item.area, formatteddate, valuestatus, searchTerm: searchTerm })} style={{ paddingHorizontal: 15, paddingVertical: 50 }}>
+                        <Image source={require('../../assets/skip-track.png')} style={{ height: 20, width: 20 }} />
+                      </TouchableOpacity>
+
                     </View>
                   </View>
 
