@@ -206,7 +206,7 @@ const AttendanceList = ({ navigation }) => {
                 backgroundColor: '#fff',
                 padding: 12,
                 borderRadius: 10,
-                marginBottom: 10,
+                marginBottom: 15,
                 borderWidth: 1,
                 borderColor: '#eee',
                 shadowColor: '#000',
@@ -216,7 +216,7 @@ const AttendanceList = ({ navigation }) => {
             }}
         >
             {/* Staff Info with Image */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
                 {item.dates?.length > 0 && item.dates[item.dates.length - 1].image ? (
                     <Image
                         source={{ uri: item.dates[item.dates.length - 1].image }}
@@ -245,71 +245,121 @@ const AttendanceList = ({ navigation }) => {
                     </View>
                 )}
                 <View style={{ flex: 1 }}>
-                    <Text style={{ fontFamily: 'Inter-Bold', color: '#333', fontSize: 14 }}>
+                    <Text style={{ fontFamily: 'Inter-Bold', color: '#333', fontSize: 16 }}>
                         {item.staffname || 'Unknown Staff'}
                     </Text>
                     <Text style={{ fontFamily: 'Inter-Regular', color: '#666', fontSize: 12 }}>
-                        Date: {formatDatefordisplay(item.date)}
+                        {item.dates?.length || 0} Records Found
                     </Text>
                 </View>
             </View>
 
-            {/* Attendance Records */}
+            {/* Date Header */}
+            <View style={{
+                backgroundColor: '#173161',
+                padding: 8,
+                borderRadius: 6,
+                marginBottom: 10,
+            }}>
+                <Text style={{
+                    fontFamily: 'Inter-Bold',
+                    color: '#fff',
+                    fontSize: 14,
+                    textAlign: 'center'
+                }}>
+                    Date: {formatDatefordisplay(item.date)}
+                </Text>
+            </View>
+
+            {/* Table Header */}
+            <View style={{
+                flexDirection: 'row',
+                backgroundColor: '#f0f0f0',
+                padding: 8,
+                borderTopLeftRadius: 6,
+                borderTopRightRadius: 6,
+                marginBottom: 2
+            }}>
+                <Text style={{ flex: 1, fontFamily: 'Inter-Bold', color: '#333', fontSize: 12, textAlign: 'center' }}>
+                    Check-in
+                </Text>
+                <Text style={{ flex: 1, fontFamily: 'Inter-Bold', color: '#333', fontSize: 12, textAlign: 'center' }}>
+                    Check-out
+                </Text>
+                <Text style={{ flex: 1, fontFamily: 'Inter-Bold', color: '#333', fontSize: 12, textAlign: 'center' }}>
+                    Status
+                </Text>
+            </View>
+
+            {/* Attendance Records in Table Format */}
             {item.dates && item.dates.map((dateItem, index) => (
                 <View
                     key={index}
                     style={{
-                        backgroundColor: '#f8f9fa',
+                        flexDirection: 'row',
+                        backgroundColor: index % 2 === 0 ? '#f8f9fa' : '#ffffff',
                         padding: 10,
-                        borderRadius: 8,
-                        marginBottom: 8,
-                        borderLeftWidth: 3,
-                        borderLeftColor: dateItem.status === 'Present' ? '#28a745' : '#dc3545',
+                        borderBottomWidth: index === item.dates.length - 1 ? 0 : 1,
+                        borderBottomColor: '#eee',
+                        borderBottomLeftRadius: index === item.dates.length - 1 ? 6 : 0,
+                        borderBottomRightRadius: index === item.dates.length - 1 ? 6 : 0,
                     }}
                 >
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
-                        <Text style={{ fontFamily: 'Inter-Medium', color: '#333', fontSize: 12 }}>
-                            Check-in:
-                        </Text>
-                        <Text style={{ fontFamily: 'Inter-Regular', color: '#000', fontSize: 12 }}>
-                            {dateItem.checkin}
-                        </Text>
-                    </View>
+                    {/* Check-in Time */}
+                    <Text style={{
+                        flex: 1,
+                        fontFamily: 'Inter-Regular',
+                        color: '#000',
+                        fontSize: 12,
+                        textAlign: 'center'
+                    }}>
+                        {dateItem.checkin}
+                    </Text>
 
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
-                        <Text style={{ fontFamily: 'Inter-Medium', color: '#333', fontSize: 12 }}>
-                            Check-out:
-                        </Text>
-                        <Text style={{ fontFamily: 'Inter-Regular', color: '#000', fontSize: 12 }}>
-                            {dateItem.checkout === '00:00:00' ? 'Not Checked Out' : dateItem.checkout}
-                        </Text>
-                    </View>
+                    {/* Check-out Time */}
+                    <Text style={{
+                        flex: 1,
+                        fontFamily: 'Inter-Regular',
+                        color: '#000',
+                        fontSize: 12,
+                        textAlign: 'center'
+                    }}>
+                        {dateItem.checkout === '00:00:00' ? 'Not Checked Out' : dateItem.checkout}
+                    </Text>
 
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
-                        <Text style={{ fontFamily: 'Inter-Medium', color: '#333', fontSize: 12 }}>
-                            Status:
-                        </Text>
-                        <Text
-                            style={{
-                                fontFamily: 'Inter-Regular',
-                                color: dateItem.status === 'Present' ? 'green' : 'red',
-                                fontSize: 12,
-                            }}
-                        >
-                            {dateItem.status}
-                        </Text>
-                    </View>
-
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                        <Text style={{ fontFamily: 'Inter-Medium', color: '#333', fontSize: 10 }}>
-                            Recorded:
-                        </Text>
-                        <Text style={{ fontFamily: 'Inter-Regular', color: '#666', fontSize: 10 }}>
-                            {formatDatefordisplay(dateItem.entrydate)}
-                        </Text>
-                    </View>
+                    {/* Status */}
+                    <Text
+                        style={{
+                            flex: 1,
+                            fontFamily: 'Inter-Regular',
+                            color: dateItem.status === 'Present' ? 'green' : 'red',
+                            fontSize: 12,
+                            textAlign: 'center',
+                        }}
+                    >
+                        {dateItem.status}
+                    </Text>
                 </View>
             ))}
+
+            {/* Summary Footer */}
+            <View style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                marginTop: 10,
+                paddingTop: 8,
+                borderTopWidth: 1,
+                borderTopColor: '#eee'
+            }}>
+                <Text style={{ fontFamily: 'Inter-Regular', color: '#666', fontSize: 11 }}>
+                    First Check-in: {item.dates?.[0]?.checkin || 'N/A'}
+                </Text>
+                <Text style={{ fontFamily: 'Inter-Regular', color: '#666', fontSize: 11 }}>
+                    Last Activity: {item.dates?.[item.dates.length - 1]?.checkout === '00:00:00'
+                        ? item.dates[item.dates.length - 1]?.checkin
+                        : item.dates[item.dates.length - 1]?.checkout || 'N/A'}
+                </Text>
+            </View>
         </View>
     );
 

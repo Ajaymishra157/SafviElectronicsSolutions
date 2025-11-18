@@ -1,4 +1,4 @@
-package com.safvielectricalsolutions;
+package com.safvielectricalsolutionsdev;
 
 import android.content.Intent;
 import android.content.Context;

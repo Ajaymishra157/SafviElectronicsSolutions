@@ -1,5 +1,6 @@
 const Constant = {
-    URL: 'https://safvi.gujaratmarketing.in/api/',
+    // URL: 'https://safvi.gujaratmarketing.in/api/',
+    URL: 'https://safvi.gujaratmarketing.in/dev/api/',
     // URL: 'https://haashh.webmastersinfotech.in/officedevelopment/api-1.8/',
 
     OtherURL: {
@@ -49,8 +50,10 @@ const Constant = {
         list_allstaffattendance: 'staff_attendance/list_allstaffattendance.php',
         filter_attendance: 'staff_attendance/filter_attendance.php',
 
-
-
+        sales_report: 'report/sales_report.php',
+        detail_sales_report: 'report/detail_sales_report.php',
+        stock_report: 'report/stock_report.php',
+        detail_stock_report: 'report/detail_stock_report.php',
 
 
 
@@ -152,7 +155,7 @@ const Constant = {
 
         delivered_report: 'delivered_report.php',
         list_amount: 'list_amount.php',
-        sales_report: 'sales_report.php',
+
         party_sales_report: 'party_sales_report.php',
         man_delivery_report: 'man_delivery_report.php',
         man_partywised: 'man_partywised.php',
@@ -181,7 +184,7 @@ const Constant = {
         update_stock: 'update_stock.php',
         delete_stock: 'delete_stock.php',
         subject_list: 'subject_list.php',
-        stock_report: 'stock_report.php',
+
         party_stock_report: 'party_stock_report.php',
         user_stock_report: 'user_stock_report.php',
         stock_status: 'stock_status.php',

@@ -1,4 +1,4 @@
-package com.safvielectricalsolutions;
+package com.safvielectricalsolutionsdev;
 
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.NativeModule;

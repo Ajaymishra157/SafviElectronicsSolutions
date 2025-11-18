@@ -76,9 +76,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.safvielectricalsolutions"
+    namespace "com.safvielectricalsolutionsdev"
     defaultConfig {
-        applicationId "com.safvielectricalsolutions"
+        applicationId "com.safvielectricalsolutionsdev"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

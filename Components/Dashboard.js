@@ -525,18 +525,21 @@ const Dashboard = ({ navigation }) => {
                     {/* ) : null} */}
 
                     {/* {hasPermission("Party Ledger") || hasPermission("Salesman Report") || hasPermission("LMTD") ? ( */}
+                    {usertype !== 'Office staff' && (
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, backgroundColor: '#fff', borderRadius: 10, borderWidth: 0.5, borderColor: '#DCDCDC', elevation: 5, marginTop: 10 }}>
+                            {/* {hasPermission("Salesman Report") &&  */}
+                            <PermissionButton navigation={navigation} route="SalesReport" image="sales" label="Sales Report" />
 
-                    {/* <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, backgroundColor: '#fff', borderRadius: 10, borderWidth: 0.5, borderColor: '#DCDCDC', elevation: 5, marginTop: 10 }}> */}
-                    {/* {hasPermission("Salesman Report") &&  */}
-                    {/* <PermissionButton navigation={navigation} route="Salesmanreport" image="sales" label="Salesman Report" /> */}
+                            <PermissionButton navigation={navigation} route="StockReport" image="stock" label="Stock Report" />
 
-                    {/* {hasPermission("Party Ledger") &&  */}
-                    {/* <PermissionButton navigation={navigation} route="Partyledger" image="ledger" label="Party Ledger" /> */}
+                            {/* {hasPermission("Party Ledger") &&  */}
+                            {/* <PermissionButton navigation={navigation} route="Partyledger" image="ledger" label="Party Ledger" /> */}
 
-                    {/* {hasPermission("LMTD") &&  */}
-                    {/* <PermissionButton navigation={navigation} route="LMTDReport" image="products" label="LMTD" /> */}
+                            {/* {hasPermission("LMTD") &&  */}
+                            {/* <PermissionButton navigation={navigation} route="LMTDReport" image="products" label="LMTD" /> */}
 
-                    {/* </View> */}
+                        </View>
+                    )}
                     {/* ) : null} */}
 
                     {/* {hasPermission("Stock Entry") || hasPermission("Stock Report") || hasPermission("Purchase Entry") ? ( */}
