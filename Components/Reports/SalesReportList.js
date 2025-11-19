@@ -5,8 +5,7 @@ import {
     Image,
     ScrollView,
     StatusBar,
-    ActivityIndicator,
-    Alert
+    ActivityIndicator
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -18,15 +17,13 @@ const SalesReportList = () => {
     const navigation = useNavigation();
     const route = useRoute();
 
-    const { productId, productName } = route.params;
+    const { productId, productName, startDate: paramStartDate, endDate: paramEndDate } = route.params;
 
-    // 🔹 State variables for Start & End Dates
-    const [startDate, setStartDate] = useState(new Date());
-    const [endDate, setEndDate] = useState(new Date());
-
+    // 🔹 State variables with values from params (read-only)
+    const [startDate, setStartDate] = useState(new Date(paramStartDate));
+    const [endDate, setEndDate] = useState(new Date(paramEndDate));
     const [showStartPicker, setShowStartPicker] = useState(false);
     const [showEndPicker, setShowEndPicker] = useState(false);
-
     const [loading, setLoading] = useState(false);
     const [reportData, setReportData] = useState(null);
 
@@ -39,22 +36,12 @@ const SalesReportList = () => {
         return `${d}/${m}/${y}`;
     };
 
-    const onChangeStartDate = (event, selected) => {
-        setShowStartPicker(false);
-        if (selected) setStartDate(selected);
-    };
-
-    const onChangeEndDate = (event, selected) => {
-        setShowEndPicker(false);
-        if (selected) setEndDate(selected);
-    };
+    // Auto-fetch report when component mounts
+    useEffect(() => {
+        fetchCustomerReport();
+    }, []);
 
     const fetchCustomerReport = async () => {
-        if (endDate < startDate) {
-            // Alert.alert("Invalid", "End Date cannot be earlier than Start Date");
-            return;
-        }
-
         setLoading(true);
 
         try {
@@ -119,7 +106,7 @@ const SalesReportList = () => {
 
             <ScrollView style={{ padding: 16 }}>
 
-                {/* DATE FILTER CARD */}
+                {/* DATE DISPLAY CARD (Read-only) */}
                 <View style={{
                     backgroundColor: "#fff",
                     padding: 16,
@@ -127,79 +114,61 @@ const SalesReportList = () => {
                     marginBottom: 16,
                     elevation: 3
                 }}>
-                    {/* START DATE */}
                     <Text style={{
-                        fontFamily: "Inter-Medium",
-                        fontSize: 14,
-                        marginBottom: 8,
-                        color: "#666",
-                    }}>Start Date</Text>
+                        fontSize: 16,
+                        fontFamily: 'Inter-Bold',
+                        color: '#173161',
+                        marginBottom: 12,
+                        textAlign: 'center'
+                    }}>
+                        Selected Date Range
+                    </Text>
 
-                    <TouchableOpacity
-                        onPress={() => setShowStartPicker(true)}
-                        style={{
-                            borderWidth: 1,
-                            borderColor: "#ccc",
-                            borderRadius: 8,
-                            padding: 12,
-                            flexDirection: "row",
-                            justifyContent: "space-between",
-                            marginBottom: 16
-                        }}
-                    >
-                        <Text style={{ fontSize: 16, color: "#333", fontFamily: "Inter-Medium" }}>
+                    {/* START DATE */}
+                    <View style={{
+                        flexDirection: 'row',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        marginBottom: 8
+                    }}>
+                        <Text style={{
+                            fontFamily: "Inter-Medium",
+                            fontSize: 14,
+                            color: "#666",
+                            marginRight: 6
+                        }}>Start Date:</Text>
+                        <Text style={{
+                            fontSize: 14,
+                            color: "#333",
+                            fontFamily: "Inter-Medium",
+                        }}>
                             {formatDisplayDate(startDate)}
                         </Text>
-                        <Icon name="calendar" size={20} color="#173161" />
-                    </TouchableOpacity>
+                    </View>
 
                     {/* END DATE */}
-                    <Text style={{
-                        fontFamily: "Inter-Medium",
-                        fontSize: 14,
-                        marginBottom: 8,
-                        color: "#666",
-                    }}>End Date</Text>
-
-                    <TouchableOpacity
-                        onPress={() => setShowEndPicker(true)}
-                        style={{
-                            borderWidth: 1,
-                            borderColor: "#ccc",
-                            borderRadius: 8,
-                            padding: 12,
-                            flexDirection: "row",
-                            justifyContent: "space-between",
-                        }}
-                    >
-                        <Text style={{ fontSize: 16, color: "#333", fontFamily: "Inter-Medium" }}>
+                    <View style={{
+                        flexDirection: 'row',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        marginBottom: 8
+                    }}>
+                        <Text style={{
+                            fontFamily: "Inter-Medium",
+                            fontSize: 14,
+                            color: "#666",
+                            marginRight: 6
+                        }}>End Date:</Text>
+                        <Text style={{
+                            fontSize: 14,
+                            color: "#333",
+                            fontFamily: "Inter-Medium",
+                        }}>
                             {formatDisplayDate(endDate)}
                         </Text>
-                        <Icon name="calendar" size={20} color="#173161" />
-                    </TouchableOpacity>
+                    </View>
 
-                    <TouchableOpacity
-                        style={{
-                            marginTop: 16,
-                            backgroundColor: "#173161",
-                            padding: 12,
-                            borderRadius: 8,
-                            alignItems: "center",
-                        }}
-                        onPress={fetchCustomerReport}
-                    >
-                        {loading ? (
-                            <ActivityIndicator color="#fff" />
-                        ) : (
-                            <Text style={{
-                                color: "#fff",
-                                fontFamily: "Inter-Bold",
-                                fontSize: 16
-                            }}>
-                                Load Report
-                            </Text>
-                        )}
-                    </TouchableOpacity>
+
                 </View>
 
                 {/* TABLE */}
@@ -217,7 +186,6 @@ const SalesReportList = () => {
                         borderColor: '#E0E0E0',
                     }}>
 
-                        {/* HEADER TITLE (Optional) */}
                         <View style={{
                             flexDirection: 'row',
                             justifyContent: 'center',
@@ -285,42 +253,45 @@ const SalesReportList = () => {
                                 borderRightWidth: 1,
                                 borderBottomWidth: 1,
                                 borderColor: "black",
+
                             }}>
 
-                                {/* Sr No */}
                                 <Text style={{
                                     flex: 0.4,
                                     textAlign: "center",
                                     paddingVertical: 10,
                                     borderRightWidth: 1,
                                     borderColor: "black",
+                                    color: 'black',
+                                    fontFamily: 'Inter-Regular'
                                 }}>
                                     {i + 1}
                                 </Text>
 
-                                {/* Customer Name */}
                                 <Text style={{
                                     flex: 2.2,
                                     paddingVertical: 10,
                                     paddingLeft: 8,
                                     borderRightWidth: 1,
                                     borderColor: "black",
+                                    color: 'black',
+                                    fontFamily: 'Inter-Regular'
                                 }}>
                                     {item.customer_name}
                                 </Text>
 
-                                {/* Qty */}
                                 <Text style={{
                                     flex: 1,
                                     textAlign: "center",
                                     paddingVertical: 10,
                                     borderRightWidth: 1,
                                     borderColor: "black",
+                                    color: 'black',
+                                    fontFamily: 'Inter-Regular'
                                 }}>
                                     {item.item_quantity}
                                 </Text>
 
-                                {/* Total Amount */}
                                 <Text style={{
                                     flex: 1.4,
                                     textAlign: "center",
@@ -339,9 +310,10 @@ const SalesReportList = () => {
                             borderColor: "#173161",
                             backgroundColor: "#F0F4FF",
                             borderTopWidth: 0,
+
                         }}>
                             <Text style={{
-                                flex: 2.6,    // SAME AS PRODUCT TABLE
+                                flex: 2.6,
                                 paddingVertical: 12,
                                 paddingLeft: 8,
                                 fontFamily: "Inter-Bold",
@@ -378,35 +350,23 @@ const SalesReportList = () => {
                     </View>
                 )}
 
+                {/* LOADING */}
+                {loading && (
+                    <View style={{ alignItems: 'center', padding: 20 }}>
+                        <ActivityIndicator size="large" color="#173161" />
+                        <Text style={{ marginTop: 10, color: '#666' }}>Loading report...</Text>
+                    </View>
+                )}
 
                 {/* NO DATA */}
                 {!reportData && !loading && (
                     <View style={{ backgroundColor: "#fff", padding: 24, borderRadius: 12, alignItems: "center" }}>
                         <Image source={require("../../assets/nodata.png")} style={{ width: 80, height: 80, marginBottom: 12 }} />
-                        <Text style={{ fontSize: 16, color: "#666" }}>No data found</Text>
+                        <Text style={{ fontSize: 16, color: "#666" }}>No data found for selected period</Text>
                     </View>
                 )}
 
             </ScrollView>
-
-            {/* DATE PICKERS */}
-            {showStartPicker && (
-                <DateTimePicker
-                    value={startDate}
-                    mode="date"
-                    maximumDate={new Date()}
-                    onChange={onChangeStartDate}
-                />
-            )}
-
-            {showEndPicker && (
-                <DateTimePicker
-                    value={endDate}
-                    mode="date"
-                    maximumDate={new Date()}
-                    onChange={onChangeEndDate}
-                />
-            )}
         </View>
     );
 };

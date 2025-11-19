@@ -63,6 +63,7 @@ import SalesReport from '../Reports/SalesReport';
 import SalesReportList from '../Reports/SalesReportList';
 import StockReport from '../Reports/StockReport';
 import StockReportList from '../Reports/StockReportList';
+import MyServices from '../ManageService/MyServices';
 
 
 const Mainstack = () => {
@@ -163,6 +164,10 @@ const Mainstack = () => {
         <stack.Screen name='AddService' component={AddService} options={{ headerShown: false }} />
         <stack.Screen name='SearchServicecustomer' component={SearchServicecustomer} options={{ headerShown: false }} />
         <stack.Screen name='OrderListService' component={OrderListService} options={{ headerShown: false }} />
+        <stack.Screen name='MyServices' component={MyServices} options={{ headerShown: false }} />
+
+
+
         <stack.Screen name='AttendanceList' component={AttendanceList} options={{ headerShown: false }} />
         <stack.Screen name='AddAttendance' component={AddAttendance} options={{ headerShown: false }} />
 

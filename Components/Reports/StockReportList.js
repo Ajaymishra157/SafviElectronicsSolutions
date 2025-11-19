@@ -18,11 +18,11 @@ const StockReportList = () => {
     const navigation = useNavigation();
     const route = useRoute();
 
-    const { productId, productName } = route.params;
+    const { productId, productName, startDate: paramStartDate, endDate: paramEndDate } = route.params;
 
     // 🔹 State variables for Start & End Dates
-    const [startDate, setStartDate] = useState(new Date());
-    const [endDate, setEndDate] = useState(new Date());
+    const [startDate, setStartDate] = useState(new Date(paramStartDate));
+    const [endDate, setEndDate] = useState(new Date(paramEndDate));
 
     const [showStartPicker, setShowStartPicker] = useState(false);
     const [showEndPicker, setShowEndPicker] = useState(false);
@@ -38,6 +38,11 @@ const StockReportList = () => {
         const y = date.getFullYear();
         return `${d}/${m}/${y}`;
     };
+
+    // Auto-fetch report when component mounts
+    useEffect(() => {
+        fetchCustomerReport();
+    }, []);
 
     // Component ke andar yeh function add karo
     const formatStockDate = (dateString) => {
@@ -133,7 +138,7 @@ const StockReportList = () => {
 
             <ScrollView style={{ padding: 16 }}>
 
-                {/* DATE FILTER CARD */}
+                {/* DATE DISPLAY CARD (Read-only) */}
                 <View style={{
                     backgroundColor: "#fff",
                     padding: 16,
@@ -141,79 +146,61 @@ const StockReportList = () => {
                     marginBottom: 16,
                     elevation: 3
                 }}>
-                    {/* START DATE */}
                     <Text style={{
-                        fontFamily: "Inter-Medium",
-                        fontSize: 14,
-                        marginBottom: 8,
-                        color: "#666",
-                    }}>Start Date</Text>
+                        fontSize: 16,
+                        fontFamily: 'Inter-Bold',
+                        color: '#173161',
+                        marginBottom: 12,
+                        textAlign: 'center'
+                    }}>
+                        Selected Date Range
+                    </Text>
 
-                    <TouchableOpacity
-                        onPress={() => setShowStartPicker(true)}
-                        style={{
-                            borderWidth: 1,
-                            borderColor: "#ccc",
-                            borderRadius: 8,
-                            padding: 12,
-                            flexDirection: "row",
-                            justifyContent: "space-between",
-                            marginBottom: 16
-                        }}
-                    >
-                        <Text style={{ fontSize: 16, color: "#333", fontFamily: "Inter-Medium" }}>
+                    {/* START DATE */}
+                    <View style={{
+                        flexDirection: 'row',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        marginBottom: 8
+                    }}>
+                        <Text style={{
+                            fontFamily: "Inter-Medium",
+                            fontSize: 14,
+                            color: "#666",
+                            marginRight: 6
+                        }}>Start Date:</Text>
+                        <Text style={{
+                            fontSize: 14,
+                            color: "#333",
+                            fontFamily: "Inter-Medium",
+                        }}>
                             {formatDisplayDate(startDate)}
                         </Text>
-                        <Icon name="calendar" size={20} color="#173161" />
-                    </TouchableOpacity>
+                    </View>
 
                     {/* END DATE */}
-                    <Text style={{
-                        fontFamily: "Inter-Medium",
-                        fontSize: 14,
-                        marginBottom: 8,
-                        color: "#666",
-                    }}>End Date</Text>
-
-                    <TouchableOpacity
-                        onPress={() => setShowEndPicker(true)}
-                        style={{
-                            borderWidth: 1,
-                            borderColor: "#ccc",
-                            borderRadius: 8,
-                            padding: 12,
-                            flexDirection: "row",
-                            justifyContent: "space-between",
-                        }}
-                    >
-                        <Text style={{ fontSize: 16, color: "#333", fontFamily: "Inter-Medium" }}>
+                    <View style={{
+                        flexDirection: 'row',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        marginBottom: 8
+                    }}>
+                        <Text style={{
+                            fontFamily: "Inter-Medium",
+                            fontSize: 14,
+                            color: "#666",
+                            marginRight: 6
+                        }}>End Date:</Text>
+                        <Text style={{
+                            fontSize: 14,
+                            color: "#333",
+                            fontFamily: "Inter-Medium",
+                        }}>
                             {formatDisplayDate(endDate)}
                         </Text>
-                        <Icon name="calendar" size={20} color="#173161" />
-                    </TouchableOpacity>
+                    </View>
 
-                    <TouchableOpacity
-                        style={{
-                            marginTop: 16,
-                            backgroundColor: "#173161",
-                            padding: 12,
-                            borderRadius: 8,
-                            alignItems: "center",
-                        }}
-                        onPress={fetchCustomerReport}
-                    >
-                        {loading ? (
-                            <ActivityIndicator color="#fff" />
-                        ) : (
-                            <Text style={{
-                                color: "#fff",
-                                fontFamily: "Inter-Bold",
-                                fontSize: 16
-                            }}>
-                                Load Report
-                            </Text>
-                        )}
-                    </TouchableOpacity>
+
                 </View>
 
                 {/* TABLE */}
@@ -319,6 +306,8 @@ const StockReportList = () => {
                                     paddingVertical: 10,
                                     borderRightWidth: 1,
                                     borderColor: "black",
+                                    color: 'black',
+                                    fontFamily: 'Inter-Regular', fontSize: 13
                                 }}>
                                     {i + 1}
                                 </Text>
@@ -330,6 +319,8 @@ const StockReportList = () => {
                                     paddingLeft: 8,
                                     borderRightWidth: 1,
                                     borderColor: "black",
+                                    color: 'black',
+                                    fontFamily: 'Inter-Regular', fontSize: 13
 
                                 }}>
                                     {formatStockDate(item.stock_date)}
@@ -342,6 +333,8 @@ const StockReportList = () => {
                                     paddingVertical: 10,
                                     borderRightWidth: 1,
                                     borderColor: "black",
+                                    color: 'black',
+                                    fontFamily: 'Inter-Regular', fontSize: 13
                                 }}>
                                     {item.purchase}
                                 </Text>
@@ -354,6 +347,8 @@ const StockReportList = () => {
                                     borderRightWidth: 1,  // ✅ Right border added
                                     borderColor: "black",
                                     color: "black",
+
+                                    fontFamily: 'Inter-Regular', fontSize: 13
                                 }}>
                                     {item.sale}
                                 </Text>
@@ -363,7 +358,9 @@ const StockReportList = () => {
                                     flex: 1.1,
                                     textAlign: "center",
                                     paddingVertical: 10,
-                                    color: "black",
+
+                                    color: 'black',
+                                    fontFamily: 'Inter-Regular', fontSize: 13
                                 }}>
                                     {item.available}
                                 </Text>

@@ -452,7 +452,7 @@ const Dashboard = ({ navigation }) => {
                 <ScrollView keyboardShouldPersistTaps='handled' >
                     {/* Permissions-Based UI */}
                     {/* {hasPermission("Users") || hasPermission("Category") || hasPermission("Sub Category") ? ( */}
-                    {usertype !== 'Office staff' && (
+                    {usertype !== 'Office Staff' && (
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, borderRadius: 10, borderWidth: 0.5, borderColor: '#DCDCDC', backgroundColor: '#fff', elevation: 5 }}>
                             {/* {hasPermission("Users") && */}
                             <PermissionButton navigation={navigation} route="Categorylist" image="category" label="Category" />
@@ -470,7 +470,7 @@ const Dashboard = ({ navigation }) => {
                     {/* ) : null} */}
 
                     {/* {hasPermission("Products") || hasPermission("Customers") || hasPermission("Orders") ? ( */}
-                    {usertype !== 'Office staff' && (
+                    {usertype !== 'Office Staff' && (
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, backgroundColor: '#fff', borderRadius: 10, borderWidth: 0.5, borderColor: '#DCDCDC', elevation: 5, marginTop: 10 }}>
                             {/* {hasPermission("Products") &&  */}
                             <PermissionButton navigation={navigation} route="Userslist" image="users" label="Staffs" />
@@ -488,7 +488,7 @@ const Dashboard = ({ navigation }) => {
                     {/* ) : null} */}
 
                     {/* {hasPermission("Market Visit") || hasPermission("Delivery Report") || hasPermission("Sales Report") ? ( */}
-                    {usertype !== 'Office staff' && (
+                    {usertype !== 'Office Staff' && (
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, backgroundColor: '#fff', borderRadius: 10, borderWidth: 0.5, borderColor: '#DCDCDC', elevation: 5, marginTop: 10 }}>
                             {/* {hasPermission("Market Visit") &&  */}
                             {/* <PermissionButton navigation={navigation} route="Marketvisit" image="products" label="Market Visit" /> */}
@@ -508,11 +508,12 @@ const Dashboard = ({ navigation }) => {
                     {/* // ) : null} */}
 
                     {/* {hasPermission("Delivery Man Report") || hasPermission("Customer Type") || hasPermission("Payment Type1") ? ( */}
-                    {usertype == 'Office staff' && (
+                    {usertype == 'Office Staff' && (
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, backgroundColor: '#fff', borderRadius: 10, borderWidth: 0.5, borderColor: '#DCDCDC', elevation: 5, marginTop: 10 }}>
                             {/* {hasPermission("Payment Type1") && */}
                             {/* <PermissionButton navigation={navigation} route="PaymentList" image="payment" label="Payment Type" /> */}
                             <PermissionButton navigation={navigation} route="AddAttendance" image="attendance" label="Attendance" />
+                            <PermissionButton navigation={navigation} route="MyServices" image="service" label="My Services" />
 
                             {/* {hasPermission("Customer Type") && */}
                             {/* <PermissionButton navigation={navigation} route="Customercategory" image="customer" label="Customer Type" /> */}
@@ -525,7 +526,7 @@ const Dashboard = ({ navigation }) => {
                     {/* ) : null} */}
 
                     {/* {hasPermission("Party Ledger") || hasPermission("Salesman Report") || hasPermission("LMTD") ? ( */}
-                    {usertype !== 'Office staff' && (
+                    {usertype !== 'Office Staff' && (
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, backgroundColor: '#fff', borderRadius: 10, borderWidth: 0.5, borderColor: '#DCDCDC', elevation: 5, marginTop: 10 }}>
                             {/* {hasPermission("Salesman Report") &&  */}
                             <PermissionButton navigation={navigation} route="SalesReport" image="sales" label="Sales Report" />

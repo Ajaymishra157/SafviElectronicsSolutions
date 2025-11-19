@@ -131,7 +131,7 @@ const SalesReport = () => {
                 </Text>
             </View>
 
-            <ScrollView style={{ flex: 1, padding: 16 }}>
+            <ScrollView style={{ flex: 1, padding: 16 }} contentContainerStyle={{ paddingBottom: 30 }} keyboardShouldPersistTaps='handled'>
                 {/* Date Selection Card */}
                 <View style={{
                     backgroundColor: '#FFF',
@@ -467,6 +467,8 @@ const SalesReport = () => {
                                                 navigation.navigate("SalesReportList", {
                                                     productId: item.product_id,
                                                     productName: item.product_name,
+                                                    startDate: formatDate(startDate),
+                                                    endDate: formatDate(endDate)
                                                 })
                                             }
 
