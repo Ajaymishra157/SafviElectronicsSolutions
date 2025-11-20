@@ -43,6 +43,10 @@ const Constant = {
         update_service: 'service/update_service.php',
         service_update: 'service/service_update.php',
         assign_staff: 'service/assign_staff.php',
+        staff_wise_service: 'service/staff_wise_service.php',
+        status_update: 'service/status_update.php',
+
+
 
 
         list_staffattendance: 'staff_attendance/list_staffattendance.php',
@@ -147,7 +151,7 @@ const Constant = {
 
         list_price: 'list_price.php',
         update_price: 'update_price.php',
-        status_update: 'status_update.php',
+
 
         list_vehicle_entries: 'list_vehicle_entries.php',
         add_vic_entry: 'add_vic_entry.php',
