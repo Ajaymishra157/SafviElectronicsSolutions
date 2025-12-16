@@ -1,4 +1,4 @@
-import { Image, StatusBar, StyleSheet, Text, TouchableOpacity, View, Modal, TextInput, ActivityIndicator, ToastAndroid, Alert } from 'react-native'
+import { Image, StatusBar, ScrollView, StyleSheet, Text, TouchableOpacity, View, Modal, TextInput, ActivityIndicator, ToastAndroid, Alert } from 'react-native'
 import React, { useState } from 'react'
 import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import { FlatList } from 'react-native-gesture-handler';
@@ -21,6 +21,11 @@ const MyServices = () => {
     const [selectedAction, setSelectedAction] = useState('');
     const [services, setServices] = useState([
     ]);
+    const [codeError, setCodeError] = useState('');
+
+    const [detailsModalVisible, setDetailsModalVisible] = useState(false);
+    const [selectedServiceDetails, setSelectedServiceDetails] = useState(null);
+    const [detailsLoading, setDetailsLoading] = useState(false);
 
 
     const listMyServices = async () => {
@@ -28,6 +33,8 @@ const MyServices = () => {
             setLoading(true);
 
             const StaffId = await AsyncStorage.getItem('admin_id');
+
+
             const url = `${Constant.URL}${Constant.OtherURL.staff_wise_service}`;// replace with actual endpoint
             const payload = {
                 staff_id: StaffId
@@ -56,25 +63,24 @@ const MyServices = () => {
     };
 
     const handleStatusChange = async (action) => {
+
         if (!selectedItem) return;
 
         console.log("service id ye hai", selectedItem.service_id);
+
         try {
             setLoading(true);
 
-            // API call to update service status
+            // ---------------------------------
+            // 1️⃣ First API ALWAYS runs
+            // ---------------------------------
             const payload = {
                 service_id: selectedItem.service_id,
                 action: action,
-                note: action === 'Cancel' ? note : "" // Note sirf cancel ke liye
+                note: action === 'Cancel' ? note : ""
             };
 
-            // Agar Complete hai to status_code bhi bhejo
-            if (action === 'Complete') {
-                payload.status_code = code;
-            }
-
-            console.log('📤 Updating service status:', payload);
+            console.log('📤 First API payload:', payload);
 
             const response = await fetch(`${Constant.URL}${Constant.OtherURL.status_update}`, {
                 method: 'POST',
@@ -83,39 +89,122 @@ const MyServices = () => {
             });
 
             const result = await response.json();
-            console.log('📥 Update status response:', result);
+            console.log('📥 First API response:', result);
 
-            if (result.code === 200) {
-                ToastAndroid.show(`Service status updated to ${action}`, ToastAndroid.SHORT);
-
-                // Update local state
-                setServices(prevServices =>
-                    prevServices.map(service =>
-                        service.service_id === selectedItem.service_id
-                            ? {
-                                ...service,
-                                service_status: action
-                            }
-                            : service
-                    )
-                );
-            } else {
-                console.log(result.message || 'Failed to update service status');
+            if (result.code !== 200) {
+                console.log(result.message || 'Failed to update status');
+                return;
             }
 
-            // Reset modal state
+            // -------------------------
+            // 2️⃣ Cancel → yahi end
+            // -------------------------
+            if (action === "Cancel") {
+                ToastAndroid.show(
+                    "Service Cancelled Successfully",
+                    ToastAndroid.SHORT
+                );
+            }
+
+            // -------------------------
+            // 3️⃣ Complete → WAIT for code
+            // -------------------------
+            else if (action === "Complete") {
+
+                // Yahan serviceman ko code input dikhaya jayega
+                ToastAndroid.show(
+                    "Code sent to customer, please wait",
+                    ToastAndroid.SHORT
+                );
+
+                return;
+            }
+
+            // Update list UI
+            setServices(prevServices =>
+                prevServices.map(service =>
+                    service.service_id === selectedItem.service_id
+                        ? { ...service, service_status: action }
+                        : service
+                )
+            );
+
+            // Close modal
             setStatusModalVisible(false);
-            setCode('');
             setNote('');
             setSelectedAction('');
 
         } catch (error) {
-            console.log('❌ Error updating service status:', error);
-
+            console.log("❌ Error updating service:", error);
         } finally {
             setLoading(false);
         }
     };
+
+    const openDetailsModal = async (item) => {
+        setSelectedServiceDetails(item);
+        setDetailsModalVisible(true);
+    };
+
+
+    const submitCode = async () => {
+        try {
+            setLoading(true);
+            setCodeError('');
+
+            const payload = {
+                service_id: selectedItem.service_id,
+                status_code: code
+            };
+
+            console.log("📤 Second API Payload:", payload);
+
+            const response = await fetch(`${Constant.URL}${Constant.OtherURL.verify_code}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+            console.log("📥 Second API response:", result);
+
+            if (result.code === 200) {
+                ToastAndroid.show(
+                    "Service marked as Completed",
+                    ToastAndroid.SHORT
+                );
+
+                // ✅ Success par modal close karo aur state update karo
+                setStatusModalVisible(false);
+                setCode('');
+
+                // ✅ Service list refresh karo ya local state update karo
+                setServices(prevServices =>
+                    prevServices.map(service =>
+                        service.service_id === selectedItem.service_id
+                            ? { ...service, service_status: 'Complete' }
+                            : service
+                    )
+                );
+
+            } else if (result.code === 400) {
+                // ✅ 400 error - Invalid code
+                setCodeError("Invalid code does not match Happy or Unhappy code");
+                setCode(''); // clear input
+            } else {
+                // ✅ Other errors
+
+                ToastAndroid.show(result.message || "Failed to complete service. Please try again.", ToastAndroid.SHORT);
+            }
+
+        } catch (error) {
+            console.log("❌ Second API error:", error);
+            Alert.alert("Network Error", "Failed to connect to server. Please check your internet connection.", [{ text: "OK" }]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
 
     const handleCancelNote = () => {
         setShowNoteField(false);
@@ -146,11 +235,20 @@ const MyServices = () => {
 
     const formatDateOnly = (dateString) => {
         if (!dateString) return 'N/A';
+
         const date = new Date(dateString);
+
         const day = String(date.getDate()).padStart(2, '0');
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const year = date.getFullYear();
-        return `${day}/${month}/${year}`;
+
+        let hours = date.getHours();
+        let minutes = String(date.getMinutes()).padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+
+        hours = hours % 12 || 12;
+
+        return `${day}/${month}/${year} • ${hours}:${minutes} ${ampm}`;
     };
 
     const openStatusModal = () => {
@@ -161,117 +259,117 @@ const MyServices = () => {
         // setUnhappyCode('');
     };
 
-    const renderItem = ({ item }) => (
+    const renderItem = ({ item, index }) => (
         <View
             style={{
                 backgroundColor: '#FFF',
                 marginHorizontal: 10,
                 marginVertical: 3,
-
-
                 borderRadius: 10,
                 padding: 12,
                 elevation: 2,
                 shadowColor: '#000',
                 shadowOpacity: 0.1,
                 shadowOffset: { width: 0, height: 2 },
-                marginBottom: 5,
-
                 position: 'relative',
             }}
         >
-            <View
+            {/* Three Dots - Absolute Right Top */}
+            <TouchableOpacity
                 style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
+                    position: 'absolute',
+                    top: 10,
+                    right: 10,
+                    padding: 8,
+                    zIndex: 10,
+                    opacity: item.service_status !== 'Pending' ? 0.3 : 1
+                }}
+                disabled={item.service_status !== 'Pending'}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                onPress={(e) => {
+                    if (item.service_status !== 'Pending') return;
+                    const { pageX, pageY } = e.nativeEvent;
+                    openModal(item, pageX, pageY);
                 }}
             >
-                <View>
+                <Image
+                    source={require('../../assets/threedot.png')}
+                    style={{
+                        height: 20,
+                        width: 20,
+                        tintColor: item.service_status !== 'Pending' ? '#999' : '#173161',
+                    }}
+                />
+            </TouchableOpacity>
+
+            {/* Eye Icon */}
+            <TouchableOpacity
+                onPress={() => openDetailsModal(item)}
+                style={{
+                    position: 'absolute',
+                    top: 40, // three dot ke neeche
+                    right: 14,
+                    padding: 6,
+                    zIndex: 18,
+                }}
+            >
+                <Ionicons name="eye-outline" size={20} color="#173161" />
+            </TouchableOpacity>
+
+            {/* Label + Value Rows */}
+            {[
+                { label: 'Party Name', value: item.customer_name },
+                { label: 'Service Title', value: item.service_name },
+                { label: 'Amount', value: `₹${item.service_amount}` },
+                {
+                    label: 'Status',
+                    value: item.service_status,
+                    color:
+                        item.service_status === 'Pending'
+                            ? 'orange'
+                            : item.service_status === 'Complete'
+                                ? 'green'
+                                : 'red',
+                },
+                { label: 'Created On', value: formatDateOnly(item.entry_date) },
+                { label: 'Created By', value: item.added_by_user || 'Not Assign' },
+            ].map((row, i) => (
+                <View
+                    key={i}
+                    style={{
+                        flexDirection: 'row',
+                        marginTop: i === 0 ? 0 : 4,
+                        alignItems: 'flex-start',
+                    }}
+                >
                     <Text
                         style={{
-                            fontSize: 16,
-                            fontFamily: 'Inter-Bold',
-                            color: '#173161',
-                            flex: 1,
-                            textTransform: 'capitalize'
+                            width: 110,
+                            fontSize: 14,
+                            color: '#777',
+                            fontFamily: 'Inter-Medium',
                         }}
                     >
-                        {item.service_name}
+                        {row.label} :
                     </Text>
+
                     <Text
                         style={{
-                            fontSize: 16,
-                            fontFamily: 'Inter-Regular',
-                            color: '#173161',
                             flex: 1,
-                            textTransform: 'capitalize'
+                            fontSize: 14,
+                            color: row.color || '#000',
+                            fontFamily: 'Inter-SemiBold',
+                            flexWrap: 'wrap',
+                            lineHeight: 20,
                         }}
                     >
-                        {item.customer_name}
+                        {row.value}
                     </Text>
                 </View>
-
-                <TouchableOpacity
-                    onPress={(e) => {
-                        const { pageX, pageY } = e.nativeEvent;
-                        openModal(item, pageX, pageY);
-                    }}
-                >
-                    <Image
-                        source={require('../../assets/threedot.png')}
-                        style={{
-                            height: 20,
-                            width: 20,
-                            tintColor: '#173161',
-                        }}
-                    />
-                </TouchableOpacity>
-            </View>
-
-            <Text
-                style={{
-                    fontSize: 14,
-                    color: '#444',
-                    marginTop: 3,
-                    fontFamily: 'Inter-Regular',
-                }}
-            >
-                Amount: ₹{item.service_amount}
-            </Text>
-            <Text
-                style={{
-                    fontSize: 13,
-                    color: '#777',
-                    marginTop: 2,
-                    fontFamily: 'Inter-Regular',
-                }}
-            >
-                Status:{' '}
-                <Text
-                    style={{
-                        color:
-                            item.service_status === 'Pending'
-                                ? 'orange'
-                                : 'green',
-                        fontFamily: 'Inter-Medium',
-                    }}
-                >
-                    {item.service_status}
-                </Text>
-            </Text>
-            <Text
-                style={{
-                    fontSize: 12,
-                    color: '#999',
-                    marginTop: 4,
-                    fontFamily: 'Inter-Regular',
-                }}
-            >
-                {formatDateOnly(item.entry_date)}
-            </Text>
+            ))}
         </View>
     );
+
 
     return (
         <View style={{ flex: 1, backgroundColor: '#F4F6FA' }}>
@@ -403,7 +501,7 @@ const MyServices = () => {
                                 <TextInput
                                     style={{
                                         borderWidth: 1,
-                                        borderColor: '#ddd',
+                                        borderColor: codeError ? 'red' : '#ddd',
                                         borderRadius: 8,
                                         padding: 12,
                                         fontSize: 16,
@@ -415,10 +513,18 @@ const MyServices = () => {
                                     placeholder="Enter status code"
                                     placeholderTextColor='#ccc'
                                     value={code}
-                                    onChangeText={setCode}
+                                    onChangeText={(text) => {
+                                        setCode(text);
+                                        setCodeError(''); // clear error on typing
+                                    }}
                                     keyboardType="numeric"
                                     maxLength={4}
                                 />
+                                {codeError ? (
+                                    <Text style={{ color: 'red', fontSize: 12, marginTop: 4, fontFamily: 'Inter-Regular' }}>
+                                        {codeError}
+                                    </Text>
+                                ) : null}
                             </View>
                         )}
 
@@ -459,7 +565,12 @@ const MyServices = () => {
                                 </Text>
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                                     <TouchableOpacity
-                                        onPress={() => setSelectedAction('Complete')}
+                                        onPress={async () => {
+
+                                            setSelectedAction('Complete');
+                                            await handleStatusChange('Complete');
+                                        }
+                                        }
                                         style={{
                                             flex: 1,
                                             backgroundColor: '#4CAF50',
@@ -512,7 +623,13 @@ const MyServices = () => {
                                     </TouchableOpacity>
 
                                     <TouchableOpacity
-                                        onPress={() => handleStatusChange(selectedAction)}
+                                        onPress={() => {
+                                            if (selectedAction === 'Complete') {
+                                                submitCode();   // <-- yahan dusri API chalegi
+                                            } else {
+                                                handleStatusChange(selectedAction);
+                                            }
+                                        }}
                                         disabled={
                                             (selectedAction === 'Complete' && !code.trim()) ||
                                             (selectedAction === 'Cancel' && !note.trim())
@@ -552,6 +669,294 @@ const MyServices = () => {
                         </View>
                     </View>
                 </View>
+            </Modal>
+            {/* Service Details Modal */}
+            <Modal
+                visible={detailsModalVisible}
+                transparent={true}
+                animationType="slide"
+                onRequestClose={() => setDetailsModalVisible(false)}
+            >
+                <TouchableOpacity style={{
+                    flex: 1,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                }}
+                    activeOpacity={1}
+                    onPress={() => {
+                        setDetailsModalVisible(false);
+                    }}>
+                    <View style={{
+                        backgroundColor: '#fff',
+                        borderRadius: 16,
+                        padding: 20,
+                        width: '90%',
+                        maxWidth: 400,
+                        maxHeight: '80%',
+                    }}
+                        onStartShouldSetResponder={(e) => e.stopPropagation()}>
+
+                        {/* Header */}
+                        <View style={{
+                            flexDirection: 'row',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            marginBottom: 20,
+                            paddingBottom: 15,
+                            borderBottomWidth: 1,
+                            borderBottomColor: '#f0f0f0'
+                        }}>
+                            <Text style={{
+                                fontSize: 18,
+                                fontFamily: 'Inter-Bold',
+                                color: '#173161',
+                            }}>
+                                Service Details
+                            </Text>
+                            {/* <TouchableOpacity onPress={() => setDetailsModalVisible(false)}>
+                                <Ionicons name="close" size={24} color="#666" />
+                            </TouchableOpacity> */}
+                        </View>
+
+                        {detailsLoading ? (
+                            <View style={{ alignItems: 'center', padding: 20 }}>
+                                <ActivityIndicator size="large" color="#173161" />
+                                <Text style={{ marginTop: 10, color: '#666' }}>Loading details...</Text>
+                            </View>
+                        ) : (
+                            <ScrollView showsVerticalScrollIndicator={false}>
+                                {/* Service Basic Info */}
+                                <View style={{ marginBottom: 20 }}>
+                                    {/* Customer */}
+                                    <View style={{
+                                        flexDirection: 'row',
+                                        marginBottom: 8,
+                                        alignItems: 'center'
+                                    }}>
+                                        <Text style={{
+                                            fontSize: 14,
+                                            fontFamily: 'Inter-Medium',
+                                            color: '#666',
+                                            width: '35%',
+
+
+                                        }}>
+                                            Party Name:
+                                        </Text>
+                                        <Text style={{
+                                            fontSize: 14,
+                                            fontFamily: 'Inter-Bold',
+                                            color: '#333',
+                                            width: '65%',
+                                            flexWrap: 'wrap', textAlign: 'right'
+                                        }}>
+                                            {selectedServiceDetails?.customer_name}
+                                        </Text>
+                                    </View>
+                                    {/* Service Name */}
+                                    <View style={{
+                                        flexDirection: 'row',
+                                        marginBottom: 8,
+                                        alignItems: 'flex-start'
+                                    }}>
+                                        <Text style={{
+                                            fontSize: 14,
+                                            fontFamily: 'Inter-Medium',
+                                            color: '#666',
+                                            width: '35%' // Label width
+                                        }}>
+                                            Service Title:
+                                        </Text>
+                                        <Text style={{
+                                            fontSize: 16,
+                                            fontFamily: 'Inter-Bold',
+                                            color: '#333',
+                                            width: '65%', // Value width
+                                            flexWrap: 'wrap',
+                                            textAlign: 'right'
+                                        }}>
+                                            {selectedServiceDetails?.service_name}
+                                        </Text>
+                                    </View>
+
+                                    {/* Amount */}
+                                    <View style={{
+                                        flexDirection: 'row',
+                                        marginBottom: 8,
+                                        alignItems: 'center'
+                                    }}>
+                                        <Text style={{
+                                            fontSize: 14,
+                                            fontFamily: 'Inter-Medium',
+                                            color: '#666',
+                                            width: '35%'
+                                        }}>
+                                            Amount:
+                                        </Text>
+                                        <Text style={{
+                                            fontSize: 14,
+                                            fontFamily: 'Inter-Bold',
+                                            color: '#333',
+                                            width: '65%',
+                                            textAlign: 'right'
+                                        }}>
+                                            ₹{selectedServiceDetails?.service_amount}
+                                        </Text>
+                                    </View>
+
+                                    {/* Status */}
+                                    <View style={{
+                                        flexDirection: 'row',
+                                        marginBottom: 8,
+                                        alignItems: 'center'
+                                    }}>
+                                        <Text style={{
+                                            fontSize: 14,
+                                            fontFamily: 'Inter-Medium',
+                                            color: '#666',
+                                            width: '35%'
+                                        }}>
+                                            Status:
+                                        </Text>
+                                        <Text style={{
+                                            fontSize: 14,
+                                            fontFamily: 'Inter-Bold',
+                                            color: selectedServiceDetails?.service_status === 'Complete' ? 'green' :
+                                                selectedServiceDetails?.service_status === 'Cancel' ? 'red' : 'orange',
+                                            width: '65%',
+                                            textAlign: 'right'
+                                        }}>
+                                            {selectedServiceDetails?.service_status}
+                                        </Text>
+                                    </View>
+                                    {/* <View style={{
+                                        flexDirection: 'row',
+                                        marginBottom: 8,
+                                        alignItems: 'center'
+                                    }}>
+                                        <Text style={{
+                                            fontSize: 14,
+                                            fontFamily: 'Inter-Medium',
+                                            color: '#666',
+                                            width: '35%',
+
+
+                                        }}>
+                                            Staff Name:
+                                        </Text>
+                                        <Text style={{
+                                            fontSize: 14,
+                                            fontFamily: 'Inter-Bold',
+                                            color: '#333',
+                                            width: '65%',
+                                            flexWrap: 'wrap', textAlign: 'right'
+                                        }}>
+                                            {selectedServiceDetails?.staff_name}
+                                        </Text>
+                                    </View> */}
+                                </View>
+
+                                {/* Lead Information */}
+                                <View style={{
+                                    backgroundColor: '#f8f9fa',
+                                    padding: 15,
+                                    borderRadius: 12,
+                                    marginBottom: 20,
+                                }}>
+                                    <Text style={{
+                                        fontSize: 16,
+                                        fontFamily: 'Inter-Bold',
+                                        color: '#173161',
+                                        marginBottom: 12,
+                                    }}>
+                                        Service Information
+                                    </Text>
+
+                                    <View style={{ gap: 15 }}>
+
+                                        {/* Created Info */}
+                                        <View>
+                                            <Text style={{ fontSize: 12, fontFamily: 'Inter-Medium', color: '#666', marginBottom: 4 }}>
+                                                Created By
+                                            </Text>
+                                            <Text style={{ fontSize: 14, fontFamily: 'Inter-Bold', color: '#333' }}>
+                                                {selectedServiceDetails?.added_by_user || 'Admin'}
+                                            </Text>
+
+                                            <Text style={{ fontSize: 12, fontFamily: 'Inter-Regular', color: '#999' }}>
+                                                Status: <Text style={{ fontFamily: 'Inter-Regular', color: 'orange' }}>Pending</Text>
+                                            </Text>
+
+                                            <Text style={{ fontSize: 12, fontFamily: 'Inter-Regular', color: '#999' }}>
+                                                {selectedServiceDetails?.entry_date ? formatDateOnly(selectedServiceDetails.entry_date) : 'N/A'}
+                                            </Text>
+                                        </View>
+
+                                        {/* Completed / Cancelled */}
+                                        {selectedServiceDetails?.service_status !== 'Pending' && (
+                                            <View>
+                                                <Text style={{ fontSize: 12, fontFamily: 'Inter-Medium', color: '#666', marginBottom: 4 }}>
+                                                    {selectedServiceDetails?.service_status === 'Complete' ? "Completed By" : "Cancelled By"}
+                                                </Text>
+
+                                                <Text style={{ fontSize: 14, fontFamily: 'Inter-Bold', color: '#333' }}>
+                                                    {selectedServiceDetails?.staff_name || 'Service Man'}
+                                                </Text>
+
+                                                <Text style={{ fontSize: 12, fontFamily: 'Inter-Regular', color: '#999' }}>
+                                                    Status:{" "}
+                                                    <Text
+                                                        style={{
+                                                            color:
+                                                                selectedServiceDetails?.service_status === 'Complete'
+                                                                    ? 'green'
+                                                                    : selectedServiceDetails?.service_status === 'Cancel'
+                                                                        ? 'red'
+                                                                        : '#999',
+                                                            fontFamily: 'Inter-Bold'
+                                                        }}
+                                                    >
+                                                        {selectedServiceDetails?.service_status}
+                                                    </Text>
+                                                </Text>
+
+
+                                                <Text style={{ fontSize: 12, fontFamily: 'Inter-Regular', color: '#999' }}>
+                                                    {selectedServiceDetails?.complete_date ? formatDateOnly(selectedServiceDetails.complete_date) : 'N/A'}
+                                                </Text>
+                                            </View>
+                                        )}
+
+                                    </View>
+                                </View>
+
+
+
+                            </ScrollView>
+                        )}
+
+                        {/* Close Button */}
+                        <TouchableOpacity
+                            style={{
+                                backgroundColor: '#173161',
+                                paddingVertical: 10,
+                                borderRadius: 8,
+                                alignItems: 'center',
+
+                            }}
+                            onPress={() => setDetailsModalVisible(false)}
+                        >
+                            <Text style={{
+                                fontSize: 14,
+                                fontFamily: 'Inter-Bold',
+                                color: '#fff',
+                            }}>
+                                CLOSE
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                </TouchableOpacity>
             </Modal>
         </View>
     )

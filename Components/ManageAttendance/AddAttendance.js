@@ -219,6 +219,7 @@ const AddAttendance = () => {
             location: location,
             image: userImageToSend
         };
+        console.log("ye hai add attendance ka payload", payload);
 
         const url = `${Constant.URL}${Constant.OtherURL.add_staffattendance}`;
         try {

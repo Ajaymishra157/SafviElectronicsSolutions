@@ -802,7 +802,7 @@ const Purchaselist = ({ navigation, route }) => {
                         )}
                 </ScrollView>
                 <View style={{ marginTop: 10, padding: 10 }}>
-                    <MyButton btnname="Create New Purchase" background="#0a326e" fontsize={18} textcolor="#FFF" runFunc={() => navigation.navigate('SearchPurchaseCustomer')} />
+                    <MyButton btnname="Create New Purchase" background="#173161" fontsize={18} textcolor="#FFF" runFunc={() => navigation.navigate('SearchPurchaseCustomer')} />
                 </View>
             </View>
 

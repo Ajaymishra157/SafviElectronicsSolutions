@@ -174,41 +174,51 @@ const OrderList = ({ navigation, route }) => {
 
   useFocusEffect(
     React.useCallback(() => {
-      fetchusertype();
-
+      const initializeData = async () => {
+        await fetchusertype();
+        await listmyorders();
+      };
+      initializeData();
     }, [])
   );
 
   const listmyorders = async (query) => {
     setLoading(true);
-    const id = await AsyncStorage.getItem('admin_id');
-    setUser_id(id)
-    // const formattedDate = formatteddate.toISOString().split('T')[0];
-    const searchQuery = query || "";
-    const orderDate = formatteddate || null;
-    const url = `${Constant.URL}${Constant.OtherURL.confirm_orderlist}`;
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        user_id: usertype == 'Admin' ? '' : id,
-        status: valuestatus,
-        order_date: orderDate,
-        search: searchQuery
-      }),
-    });
-    const result = await response.json();
-    if (result.code == "200") {
-      setMyorders(result.payload);
-      setAdvanceOrder(result.count)
-    } else {
+    try {
+      const id = await AsyncStorage.getItem('admin_id');
+      setUser_id(id);
+
+      const searchQuery = query || "";
+      const orderDate = formatteddate || null;
+      const url = `${Constant.URL}${Constant.OtherURL.confirm_orderlist}`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: usertype == 'Admin' ? '' : id,
+          status: valuestatus,
+          order_date: orderDate,
+          search: searchQuery
+        }),
+      });
+
+      const result = await response.json();
+      if (result.code == "200") {
+        setMyorders(result.payload);
+        setAdvanceOrder(result.count);
+      } else {
+        setMyorders([]);
+        console.log('error while listing orders');
+      }
+    } catch (error) {
+      console.log('Network error:', error);
       setMyorders([]);
-      console.log('error while listing orders');
+    } finally {
+      setLoading(false);
+      setInitialLoading(false);
     }
-    setLoading(false);
-    setInitialLoading(false);
   };
 
   const handleSearchChange = (text) => {
@@ -227,11 +237,11 @@ const OrderList = ({ navigation, route }) => {
     // setSearchTimeout(newTimeout);
   };
 
-  useFocusEffect(
-    React.useCallback(() => {
-      listmyorders();
-    }, [])
-  );
+  // useFocusEffect(
+  //   React.useCallback(() => {
+  //     listmyorders();
+  //   }, [])
+  // );
 
   const setorderurgent = async () => {
     setMainloading(true);
@@ -491,7 +501,7 @@ const OrderList = ({ navigation, route }) => {
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Image source={require('../../assets/arrow_back.png')} style={{ marginLeft: 10, height: 25, width: 25 }} />
           </TouchableOpacity>
-          <Text numberOfLines={1} style={{ color: '#FFF', fontFamily: 'Inter-Bold', fontSize: 16, marginLeft: 0 }}>My Orders</Text>
+          <Text numberOfLines={1} style={{ color: '#FFF', fontFamily: 'Inter-Bold', fontSize: 16, marginLeft: 0 }}>My Projects</Text>
           <Text style={{ color: '#173161', fontFamily: 'Inter-Regular', fontSize: 18, marginLeft: 20 }}>..</Text>
         </View>
       </View>
@@ -557,7 +567,7 @@ const OrderList = ({ navigation, route }) => {
       </View>
 
       <View style={{ marginHorizontal: 10, flexDirection: 'row', gap: 5, marginBottom: 5 }}>
-        <TextInput placeholder='Search By Order No | Party' value={searchTerm} onChangeText={handleSearchChange} placeholderTextColor='gray' style={{ flex: 1, fontFamily: 'Inter-Medium', fontSize: 14, color: '#173161', borderWidth: 1, borderColor: '#737373', backgroundColor: '#fff', borderRadius: 10, paddingHorizontal: 10 }} />
+        <TextInput placeholder='Search By Project No | Party' value={searchTerm} onChangeText={handleSearchChange} placeholderTextColor='gray' style={{ flex: 1, fontFamily: 'Inter-Medium', fontSize: 14, color: '#173161', borderWidth: 1, borderColor: '#737373', backgroundColor: '#fff', borderRadius: 10, paddingHorizontal: 10 }} />
         <TouchableOpacity onPress={() => listmyorders(searchTerm)} style={{ flexDirection: 'row', backgroundColor: '#173161', borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginHorizontal: 0, padding: 10, paddingHorizontal: 15 }}>
           <Ionicons name="search" size={18} color="#fff" />
         </TouchableOpacity>
@@ -591,7 +601,7 @@ const OrderList = ({ navigation, route }) => {
                     color: '#173161',
                   }}
                 >
-                  No Orders available
+                  No Projects available
                 </Text>
               </View>
             ) : (
@@ -658,7 +668,7 @@ const OrderList = ({ navigation, route }) => {
                   }}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                       <View style={{ flexDirection: 'row' }}>
-                        <Text style={{ fontFamily: 'Inter-Bold', fontSize: 14, color: '#173161' }}>Order Number: </Text>
+                        <Text style={{ fontFamily: 'Inter-Bold', fontSize: 14, color: '#173161' }}>Project Number: </Text>
                         <Text style={{ fontFamily: 'Inter-Regular', fontSize: 14, color: '#173161', textTransform: 'uppercase' }}>{item.order_no}</Text>
                       </View>
 
@@ -687,7 +697,7 @@ const OrderList = ({ navigation, route }) => {
                         <Text style={{ fontFamily: 'Inter-Regular', fontSize: 14, color: '#173161', textTransform: 'uppercase', }}>{item.company_name}{item.area ? ` (${item.area})` : ''}</Text>
                       </View> */}
                         <View style={{ flexDirection: 'row' }}>
-                          <Text style={{ fontFamily: 'Inter-Bold', fontSize: 14, color: '#173161' }}>Order Date: </Text>
+                          <Text style={{ fontFamily: 'Inter-Bold', fontSize: 14, color: '#173161' }}>Project Date: </Text>
                           <Text style={{ fontFamily: 'Inter-Regular', fontSize: 14, color: '#173161', textTransform: 'uppercase' }}>{formatDate(item.order_date)}</Text>
                         </View>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 30 }}>
@@ -727,7 +737,7 @@ const OrderList = ({ navigation, route }) => {
                         </View>
 
                         <View style={{ flexDirection: 'row', width: '60%' }}>
-                          <Text style={{ fontFamily: 'Inter-Bold', fontSize: 14, color: '#173161' }}>Order Remark: </Text>
+                          <Text style={{ fontFamily: 'Inter-Bold', fontSize: 14, color: '#173161' }}>Project Remark: </Text>
                           <Text style={{ fontFamily: 'Inter-Regular', fontSize: 14, color: '#173161', textTransform: 'capitalize' }}>{item.order_remark}</Text>
                         </View>
 
@@ -736,7 +746,7 @@ const OrderList = ({ navigation, route }) => {
                             <Text style={{ fontFamily: 'Inter-Regular', fontSize: 14, color: '#173161', textTransform: 'capitalize' }}> {item.customer_created_by}</Text></Text>
                         </View>
                         <View style={{ flexDirection: 'row' }}>
-                          <Text style={{ fontFamily: 'Inter-Bold', fontSize: 14, color: '#173161' }}>Order By: </Text>
+                          <Text style={{ fontFamily: 'Inter-Bold', fontSize: 14, color: '#173161' }}>Project By: </Text>
                           <Text style={{ fontFamily: 'Inter-Regular', fontSize: 14, color: '#173161', textTransform: 'capitalize' }}>{item.user_name}</Text>
                         </View>
 

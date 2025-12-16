@@ -1,4 +1,4 @@
-import { View, Text, TextInput, ScrollView, Image, TouchableOpacity, ActivityIndicator } from 'react-native'
+import { View, Text, TextInput, ScrollView, Image, TouchableOpacity, ActivityIndicator, FlatList } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import Subheader from '../Commoncomponent/Subheader'
 import Constant from '../Commoncomponent/Constant';
@@ -125,6 +125,7 @@ const SearchPurchaseCustomer = ({ navigation }) => {
     };
 
     const handleSelectCompany = (item) => {
+        setSearchTerm('');
         setSelectedCompany(item); // Set the selected company
         setIsModalVisible(false);
     };
@@ -302,13 +303,14 @@ const SearchPurchaseCustomer = ({ navigation }) => {
 
             <Modal
                 visible={isModalVisible}
-                onDismiss={() => setIsModalVisible(false)} // Close modal when tapping outside
+                onDismiss={() => setIsModalVisible(false)}
                 contentContainerStyle={{
                     backgroundColor: 'white',
                     borderRadius: 10,
                     padding: 10,
                     width: '90%',
                     alignSelf: 'center',
+                    maxHeight: '80%', // ✅ Maximum height for scroll
                 }}
             >
                 {loading ? (
@@ -316,31 +318,41 @@ const SearchPurchaseCustomer = ({ navigation }) => {
                         <ActivityIndicator size="large" color="#173161" />
                     </View>
                 ) : Array.isArray(customerlist) && customerlist.length > 0 ? (
-                    customerlist.map((item, index) => (
-                        <TouchableOpacity key={index} onPress={() => handleSelectCompany(item)}>
-                            <View
-                                style={{
-                                    borderRadius: 10,
-                                    padding: 10,
-                                    borderColor: '#E0E0E0',
-                                    borderBottomWidth: 1,
-                                    backgroundColor: '#fff',
-                                    marginBottom: 10,
-                                }}
+                    <FlatList
+                        data={customerlist}
+                        keyExtractor={(item, index) => `vendor-${item.vendor_id || index}`}
+                        renderItem={({ item, index }) => (
+                            <TouchableOpacity
+                                key={index}
+                                onPress={() => handleSelectCompany(item)}
                             >
-                                <Text
+                                <View
                                     style={{
-                                        fontFamily: 'Inter-Regular',
-                                        fontSize: 14,
-                                        color: '#173161',
-                                        textTransform: 'uppercase',
+                                        borderRadius: 10,
+                                        padding: 10,
+                                        borderColor: '#E0E0E0',
+                                        borderBottomWidth: 1,
+                                        backgroundColor: '#fff',
+                                        marginBottom: 10,
                                     }}
                                 >
-                                    {item.vendor_name}
-                                </Text>
-                            </View>
-                        </TouchableOpacity>
-                    ))
+                                    <Text
+                                        style={{
+                                            fontFamily: 'Inter-Regular',
+                                            fontSize: 14,
+                                            color: '#173161',
+                                            textTransform: 'uppercase',
+                                        }}
+                                    >
+                                        {item.vendor_name}
+                                    </Text>
+                                </View>
+                            </TouchableOpacity>
+                        )}
+                        style={{ maxHeight: 400 }} // ✅ Fixed height for scroll
+                        showsVerticalScrollIndicator={true}
+                        keyboardShouldPersistTaps="handled" // ✅ Keyboard handling
+                    />
                 ) : (
                     <Text
                         style={{

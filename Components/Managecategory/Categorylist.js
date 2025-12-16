@@ -22,6 +22,9 @@ const Categorylist = () => {
     const [permissionlist, setPermissionsList] = useState([]);
     const [permissions, setPermissions] = useState([]);
 
+    const [deleteCategoryModalVisible, setDeleteCategoryModalVisible] = useState(false);
+    const [categoryToDelete, setCategoryToDelete] = useState(null);
+
     // const listPermissions = async () => {
     //     setMainloading(true);
     //     const id = await AsyncStorage.getItem('admin_id');
@@ -181,21 +184,25 @@ const Categorylist = () => {
         setLoading(false);
     };
 
-    const confirmDelete = () => {
-        Alert.alert(
-            "Delete Category",
-            `Are you sure you want to delete ${selectedCategory.name} category?`,
-            [
-                {
-                    text: "Cancel",
-                    style: "cancel"
-                },
-                {
-                    text: "Yes",
-                    onPress: () => handleDelete(selectedCategory.cid)
-                }
-            ]
-        );
+    // const confirmDelete = () => {
+    //     Alert.alert(
+    //         "Delete Category",
+    //         `Are you sure you want to delete ${selectedCategory.name} category?`,
+    //         [
+    //             {
+    //                 text: "Cancel",
+    //                 style: "cancel"
+    //             },
+    //             {
+    //                 text: "Yes",
+    //                 onPress: () => handleDelete(selectedCategory.cid)
+    //             }
+    //         ]
+    //     );
+    // };
+    const confirmDelete = (category) => {
+        setCategoryToDelete(category);
+        setDeleteCategoryModalVisible(true);
     };
 
     if (mainloading) {
@@ -315,7 +322,7 @@ const Categorylist = () => {
                         {/* )} */}
                         {/* 
                         {hasCategoryPermissions.Delete && ( */}
-                        <TouchableOpacity onPress={() => { confirmDelete(); setModalvisible(false); }} style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+                        <TouchableOpacity onPress={() => { confirmDelete(selectedCategory); setModalvisible(false); }} style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
                             <Image source={require('../../assets/trash-bin.png')} style={{ height: 20, width: 20, tintColor: '#173161' }} />
                             <Text style={{ fontSize: 16, fontFamily: 'Inter-Medium', color: '#173161' }}>Delete</Text>
                         </TouchableOpacity>
@@ -323,6 +330,108 @@ const Categorylist = () => {
                     </View>
                 </TouchableOpacity>
             </Modal>
+            <Modal
+                visible={deleteCategoryModalVisible}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setDeleteCategoryModalVisible(false)}
+            >
+                <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={() => setDeleteCategoryModalVisible(false)}
+                    style={{
+                        flex: 1,
+                        backgroundColor: 'rgba(0,0,0,0.5)',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        padding: 20,
+                    }}
+                >
+                    <View
+                        style={{
+                            backgroundColor: '#fff',
+                            borderRadius: 12,
+                            padding: 20,
+                            width: '80%',
+                            alignItems: 'center',   // ⭐ ALL CENTERED
+                        }}
+                        onStartShouldSetResponder={(e) => e.stopPropagation()}
+                    >
+                        <Text style={{
+                            fontFamily: 'Inter-Bold',
+                            fontSize: 18,
+                            color: '#D9534F',
+                            marginBottom: 8,
+                            textAlign: 'center',   // ⭐
+                        }}>
+                            Delete Category
+                        </Text>
+
+                        <Text style={{
+                            fontFamily: 'Inter-Regular',
+                            fontSize: 14,
+                            color: '#555',
+                            textAlign: 'center',   // ⭐
+                            marginBottom: 20,
+                        }}>
+                            Are you sure you want to delete "{categoryToDelete?.name}" category?
+                        </Text>
+
+                        <View
+                            style={{
+                                flexDirection: 'row',
+                                justifyContent: 'center',  // ⭐
+                                width: '100%',
+                            }}
+                        >
+                            {/* Cancel */}
+                            <TouchableOpacity
+                                onPress={() => setDeleteCategoryModalVisible(false)}
+                                style={{
+                                    flex: 1,
+                                    backgroundColor: '#ccc',
+                                    paddingVertical: 10,
+                                    borderRadius: 8,
+                                    marginRight: 5,
+                                    alignItems: 'center',   // ⭐
+                                }}
+                            >
+                                <Text style={{
+                                    color: '#173161',
+                                    fontFamily: 'Inter-SemiBold',
+                                }}>
+                                    No
+                                </Text>
+                            </TouchableOpacity>
+
+                            {/* Yes / Delete */}
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setDeleteCategoryModalVisible(false);
+                                    handleDelete(categoryToDelete.cid);
+                                }}
+                                style={{
+                                    flex: 1,
+                                    backgroundColor: '#D9534F',
+                                    paddingVertical: 10,
+                                    borderRadius: 8,
+                                    marginLeft: 5,
+                                    alignItems: 'center',   // ⭐
+                                }}
+                            >
+                                <Text style={{
+                                    color: '#fff',
+                                    fontFamily: 'Inter-SemiBold',
+                                }}>
+                                    Yes
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </TouchableOpacity>
+            </Modal>
+
+
         </View>
     )
 }

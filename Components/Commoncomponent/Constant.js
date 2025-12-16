@@ -45,6 +45,12 @@ const Constant = {
         assign_staff: 'service/assign_staff.php',
         staff_wise_service: 'service/staff_wise_service.php',
         status_update: 'service/status_update.php',
+        verify_code: 'service/verify_code.php',
+        orderno_wise_orderlist: 'service/orderno_wise_orderlist.php',
+        service_time_different: 'service/service_time_different.php',
+
+
+
 
 
 

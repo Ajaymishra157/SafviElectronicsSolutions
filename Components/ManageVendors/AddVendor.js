@@ -11,6 +11,7 @@ import { Checkbox } from "react-native-paper";
 
 const AddVendor = ({ navigation, route }) => {
     const { customerdata, mobile_no, from, customerId, screen, customer } = route.params || {};
+    console.log("customer id ye hai", customerId);
     const [vendorname, setVendorname] = useState(customerdata?.vendor_name || null);
     const [vendoremail, setVendoremail] = useState(customerdata?.vendor_email || null);
     const [vendorphoneno, setVendorphoneno] = useState(customerdata?.vendor_mobile || null);
@@ -680,7 +681,7 @@ const AddVendor = ({ navigation, route }) => {
                             <ActivityIndicator size="large" color="#173161" />
                             :
                             <View style={{ margin: 10 }}>
-                                <MyButton btnname="Save" background="#173161" fontsize={18} textcolor="#FFF" runFunc={customerId ? updateVendors : addVendors} />
+                                <MyButton btnname={customerdata?.vendor_id ? "Update" : "Save"} background="#173161" fontsize={18} textcolor="#FFF" runFunc={customerdata?.vendor_id ? updateVendors : addVendors} />
                             </View>
                         }
                     </View>

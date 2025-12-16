@@ -88,6 +88,9 @@ const OrderDetails = ({ navigation, route }) => {
     const [totalpaybleamount, setTotalpaybleamount] = useState(null);
     const [orderstatusfetch, setOrderStatusfetch] = useState(null);
 
+    const [deleteOrderModalVisible, setDeleteOrderModalVisible] = useState(false);
+
+
     const [errors, setErrors] = useState({
         paidamt: '',
         method: '',
@@ -586,22 +589,26 @@ const OrderDetails = ({ navigation, route }) => {
         setMainloading(false);
     };
 
+    // const confirmDelete = () => {
+    //     Alert.alert(
+    //         "Delete Order",
+    //         `Are you sure you want to delete this order?`,
+    //         [
+    //             {
+    //                 text: "Cancel",
+    //                 style: "cancel"
+    //             },
+    //             {
+    //                 text: "Yes",
+    //                 onPress: () => handleDelete()
+    //             }
+    //         ]
+    //     );
+    // };
     const confirmDelete = () => {
-        Alert.alert(
-            "Delete Order",
-            `Are you sure you want to delete this order?`,
-            [
-                {
-                    text: "Cancel",
-                    style: "cancel"
-                },
-                {
-                    text: "Yes",
-                    onPress: () => handleDelete()
-                }
-            ]
-        );
+        setDeleteOrderModalVisible(true);
     };
+
 
     const openModal = (x, y) => {
         setModalPosition({ top: y - 15, left: x - 120 });
@@ -779,7 +786,7 @@ const OrderDetails = ({ navigation, route }) => {
                     }}>
                         <Image source={require('../../assets/arrow_back.png')} style={{ marginLeft: 10, height: 25, width: 25 }} />
                     </TouchableOpacity>
-                    <Text style={{ color: '#FFF', fontFamily: 'Inter-Bold', fontSize: 16, marginLeft: 0 }}>Order Detaills</Text>
+                    <Text style={{ color: '#FFF', fontFamily: 'Inter-Bold', fontSize: 16, marginLeft: 0 }}>Project Details</Text>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         {/* {location_link &&
                             <TouchableOpacity onPress={() => Linking.openURL(location_link)} style={{ paddingLeft: 10, paddingVertical: 10, }}>
@@ -813,7 +820,7 @@ const OrderDetails = ({ navigation, route }) => {
                                 </Text>
                             </Text>
                             <Text style={{ color: '#000', fontSize: 12, marginBottom: 5, fontFamily: 'Inter-Medium' }}>
-                                Order Date:
+                                Project Date:
                                 <Text style={{ color: '#000', fontSize: 12, fontFamily: 'Inter-Regular' }}>
                                     {` ${formatOrderDate(orderdate)}`}
                                 </Text>
@@ -828,13 +835,13 @@ const OrderDetails = ({ navigation, route }) => {
                                 </Text>
                             </Text> */}
                             <Text style={{ color: '#000', fontSize: 12, marginBottom: 5, fontFamily: 'Inter-Medium' }}>
-                                Order Remark:
+                                Project Remark:
                                 <Text style={{ color: '#000', fontSize: 12, fontFamily: 'Inter-Regular', textTransform: 'capitalize' }}>
                                     {` ${remark}`}
                                 </Text>
                             </Text>
                             <Text style={{ color: '#000', fontSize: 12, fontFamily: 'Inter-Medium', marginBottom: 5 }}>
-                                Order No:
+                                Project No:
                                 <Text style={{ color: '#000', fontSize: 12, fontFamily: 'Inter-Regular' }}>
                                     {` ${order_no}`}
                                 </Text>
@@ -873,7 +880,7 @@ const OrderDetails = ({ navigation, route }) => {
                             ) : null}
 
                             {/* {creadibalance ? ( */}
-                            <View style={{ flexDirection: 'row', gap: 10 }}>
+                            {/* <View style={{ flexDirection: 'row', gap: 10 }}>
                                 <Text style={{ color: '#000', fontSize: 12, marginBottom: 5, fontFamily: 'Inter-Medium' }}>
                                     Credit Balance:
                                     <Text style={{ color: '#000', fontSize: 12, fontFamily: 'Inter-Regular', textTransform: 'capitalize' }}>
@@ -885,7 +892,7 @@ const OrderDetails = ({ navigation, route }) => {
                                         <Text style={{ color: '#173161', fontSize: 12, fontFamily: 'Inter-Bold', textTransform: 'capitalize' }}>Redeem</Text>
                                     </TouchableOpacity>
                                 ) : null}
-                            </View>
+                            </View> */}
 
                             {/* {transport_amt ? (
                                 <Text style={{ color: '#000', fontSize: 12, marginBottom: 5, fontFamily: 'Inter-Medium' }}>
@@ -1009,7 +1016,7 @@ const OrderDetails = ({ navigation, route }) => {
                         </View>
                     </ScrollView>
 
-                    {transport_amt ? (
+                    {/* {transport_amt ? (
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#fff', paddingHorizontal: 10 }}>
                             <View style={{ width: '70%', borderRightWidth: 0.5, borderColor: '#ccc', }}>
                                 <Text style={{ color: '#000', fontSize: 14, paddingTop: 5, fontFamily: 'Inter-Bold', textAlign: 'left' }}>
@@ -1028,7 +1035,7 @@ const OrderDetails = ({ navigation, route }) => {
                                     <Image source={require('../../assets/cash-payment.png')} style={{ height: 20, width: 20, tintColor: '#173161' }} />
                                 </TouchableOpacity>}
                         </View>
-                    ) : null}
+                    ) : null} */}
 
                     {(usertype == 'Transporter' || usertype == 'Admin') && (due != 0 || isupdatemode) && (orderstatus == 'On The Way' || orderstatus == 'Delivered') &&
                         <View style={{ backgroundColor: '#fff', borderRadius: 10, marginHorizontal: 10, marginVertical: 5, paddingVertical: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 3.84, elevation: 5, }}>
@@ -1654,6 +1661,108 @@ const OrderDetails = ({ navigation, route }) => {
                     </View>
                 </TouchableOpacity>
             </Modal>
+
+            <Modal
+                visible={deleteOrderModalVisible}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setDeleteOrderModalVisible(false)}
+            >
+                <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={() => setDeleteOrderModalVisible(false)}
+                    style={{
+                        flex: 1,
+                        backgroundColor: 'rgba(0,0,0,0.5)',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        padding: 20,
+                    }}
+                >
+                    <View
+                        style={{
+                            backgroundColor: '#fff',
+                            borderRadius: 12,
+                            padding: 20,
+                            width: '80%',
+                            alignItems: 'center',
+                        }}
+                        onStartShouldSetResponder={(e) => e.stopPropagation()}
+                    >
+                        <Text
+                            style={{
+                                fontFamily: 'Inter-Bold',
+                                fontSize: 18,
+                                color: '#D9534F',
+                                marginBottom: 8,
+                                textAlign: 'center',
+                            }}
+                        >
+                            Delete Project
+                        </Text>
+
+                        <Text
+                            style={{
+                                fontFamily: 'Inter-Regular',
+                                fontSize: 14,
+                                color: '#555',
+                                textAlign: 'center',
+                                marginBottom: 20,
+                            }}
+                        >
+                            Are you sure you want to delete this project?
+                        </Text>
+
+                        <View style={{ flexDirection: 'row', justifyContent: 'center', width: '100%' }}>
+
+                            {/* CANCEL BUTTON */}
+                            <TouchableOpacity
+                                onPress={() => setDeleteOrderModalVisible(false)}
+                                style={{
+                                    flex: 1,
+                                    backgroundColor: '#ccc',
+                                    paddingVertical: 10,
+                                    borderRadius: 8,
+                                    marginRight: 5,
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <Text style={{
+                                    color: '#173161',
+                                    fontFamily: 'Inter-SemiBold',
+                                }}>
+                                    No
+                                </Text>
+                            </TouchableOpacity>
+
+                            {/* DELETE BUTTON */}
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setDeleteOrderModalVisible(false);
+                                    handleDelete();
+                                }}
+                                style={{
+                                    flex: 1,
+                                    backgroundColor: '#D9534F',
+                                    paddingVertical: 10,
+                                    borderRadius: 8,
+                                    marginLeft: 5,
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <Text style={{
+                                    color: '#fff',
+                                    fontFamily: 'Inter-SemiBold',
+                                }}>
+                                    Yes
+                                </Text>
+                            </TouchableOpacity>
+
+                        </View>
+                    </View>
+                </TouchableOpacity>
+            </Modal>
+
         </View >
     )
 }

@@ -481,17 +481,26 @@ const AttendanceList = ({ navigation }) => {
                         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
                     }
                     ListEmptyComponent={
-                        <Text
-                            style={{
-                                textAlign: 'center',
-                                color: 'gray',
-                                marginTop: 50,
-                                fontFamily: 'Inter-Regular',
-                            }}
-                        >
-                            No attendance records found for selected dates.
-                        </Text>
+                        <View style={{ alignItems: 'center', marginTop: 40 }}>
+                            <Image
+                                source={require('../../assets/attenance.png')}   // 🔹 apna image yaha rakho
+                                style={{ width: 100, height: 100, marginBottom: 15 }}
+                                resizeMode="contain"
+                            />
+
+                            <Text
+                                style={{
+                                    textAlign: 'center',
+                                    color: 'gray',
+                                    fontSize: 14,
+                                    fontFamily: 'Inter-Regular',
+                                }}
+                            >
+                                No attendance records found for selected dates.
+                            </Text>
+                        </View>
                     }
+
                     contentContainerStyle={{ paddingHorizontal: 15, paddingBottom: 80 }}
                 />
             )}
@@ -548,7 +557,7 @@ const AttendanceList = ({ navigation }) => {
                 onRequestClose={() => setShowDateFilter(false)}
             >
                 <View style={{ flex: 1, justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
-                    <View style={{ margin: 20, backgroundColor: 'white', borderRadius: 15, padding: 20 }}>
+                    <View style={{ margin: 20, backgroundColor: '#f9f9f9', borderRadius: 15, padding: 20 }}>
                         <Text style={{ fontFamily: 'Inter-Bold', fontSize: 18, marginBottom: 20, textAlign: 'center', color: 'black' }}>
                             Filter by Date
                         </Text>
@@ -565,12 +574,18 @@ const AttendanceList = ({ navigation }) => {
                                     borderColor: '#ddd',
                                     borderRadius: 8,
                                     padding: 12,
-                                    backgroundColor: '#f9f9f9',
+                                    backgroundColor: '#ffffff',
+                                    flexDirection: 'row',
+                                    justifyContent: 'space-between'
                                 }}
                             >
                                 <Text style={{ fontFamily: 'Inter-Regular', color: 'black' }}>
                                     {formatDatefordisplay(startDate)}
                                 </Text>
+                                <Image
+                                    source={require('../../assets/calendar.png')}
+                                    style={{ height: 20, width: 20, tintColor: '#173161' }}
+                                />
                             </TouchableOpacity>
                         </View>
 
@@ -586,12 +601,18 @@ const AttendanceList = ({ navigation }) => {
                                     borderColor: '#ddd',
                                     borderRadius: 8,
                                     padding: 12,
-                                    backgroundColor: '#f9f9f9',
+                                    backgroundColor: '#ffffff',
+                                    flexDirection: 'row',
+                                    justifyContent: 'space-between'
                                 }}
                             >
                                 <Text style={{ fontFamily: 'Inter-Regular', color: 'black' }}>
                                     {formatDatefordisplay(endDate)}
                                 </Text>
+                                <Image
+                                    source={require('../../assets/calendar.png')}
+                                    style={{ height: 20, width: 20, tintColor: '#173161' }}
+                                />
                             </TouchableOpacity>
                         </View>
 

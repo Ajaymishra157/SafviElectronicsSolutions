@@ -9,14 +9,20 @@ import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/nativ
 const AddService = () => {
     const navigation = useNavigation();
     const route = useRoute();
+
     const editService = route.params?.service || null;
     const passedOrderId = route.params?.orderId || null;
     const passedOrderNo = route.params?.orderNo || null;
     const passedCustomerId = route.params?.customerid || null;
     const staffName = route.params?.staffName || null;
-    console.log("staff Name ye hai", staffName);
+    const productId = route.params?.productId || null;
+    const productName = route.params?.productName || null;
+    const OrderId = route.params?.OrderId || null;
 
 
+
+
+    const [submitLoading, setSubmitLoading] = useState(false);
 
 
     const [loading, setLoading] = useState(false);
@@ -45,6 +51,10 @@ const AddService = () => {
     const [serviceNameError, setServiceNameError] = useState('');
     const [amountError, setAmountError] = useState('');
     const [customerError, setCustomerError] = useState('');
+
+    const [amountEditable, setAmountEditable] = useState(true);
+
+
 
 
     // 🧠 Prefill edit data AFTER lists load
@@ -114,6 +124,39 @@ const AddService = () => {
             setLoading(false);
         }
     };
+
+    const fetchServiceTimeDiffrence = async (OrderId) => {
+        try {
+            const url = `${Constant.URL}${Constant.OtherURL.service_time_different}`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ order_id: OrderId }),
+            });
+            const result = await response.json();
+
+            if (result.code == 200 && result.payload) {
+                const message = result.payload[0]?.message;
+
+                if (message === "Less Than 5 Year" || message === "5 Year") {
+                    setAmount("0"); // ✅ Amount 0 set karo
+                    setAmountEditable(false); // ✅ Edit band karo
+                } else if (message === "Greater Than 5 Year") {
+                    setAmountEditable(true); // ✅ Edit allow karo
+                }
+            }
+        } catch (error) {
+            console.log('Error fetching time difference:', error);
+        }
+    };
+
+
+    useEffect(() => {
+        if (OrderId) {
+
+            fetchServiceTimeDiffrence(OrderId);
+        }
+    }, [OrderId]);
 
 
     // const listOrders = async staffId => {
@@ -190,7 +233,7 @@ const AddService = () => {
 
         if (!valid) return;
 
-        setLoading(true);
+        setSubmitLoading(true);
 
         const adminId = await AsyncStorage.getItem('admin_id');
         if (!adminId) {
@@ -206,22 +249,24 @@ const AddService = () => {
 
         const payload = isEdit
             ? {
+
                 service_id: editService.service_id,
                 staff_id: userId,
                 cust_id: customerId,
                 service_name: serviceName,
                 service_amount: amount,
-                order_no: orderNo || '', // optional
+                order_id: OrderId || '', // optional
             }
             : {
+                id: adminId,
                 staff_id: userId,
                 cust_id: customerId,
                 service_name: serviceName,
                 service_amount: amount,
-                order_no: orderNo || '',
+                order_id: OrderId || '',
             };
 
-        console.log('📦 Payload:', payload);
+
 
         try {
             const response = await fetch(url, {
@@ -231,7 +276,7 @@ const AddService = () => {
             });
 
             const result = await response.json();
-            console.log('✅ API Response:', result);
+
 
             if (result.code === 200) {
                 ToastAndroid.show(
@@ -252,7 +297,7 @@ const AddService = () => {
             console.log('❌ Error in handleSubmit:', error);
             alert('Something went wrong. Please try again.');
         } finally {
-            setLoading(false);
+            setSubmitLoading(false); // ✅ Loader stop
         }
     };
 
@@ -469,6 +514,15 @@ const AddService = () => {
                                     Staff Name: {staffName}
                                 </Text>
                             ) : null}
+                            {productName ? (
+                                <Text style={{
+                                    fontFamily: 'Inter-Medium',
+                                    color: '#555',
+                                    fontSize: 13,
+                                }}>
+                                    Product Name: {productName}
+                                </Text>
+                            ) : null}
 
                         </View>
                     )}
@@ -596,11 +650,12 @@ const AddService = () => {
                                 borderWidth: 1,
                                 borderColor: amountError ? 'red' : 'gray',
                                 borderRadius: 10,
-                                backgroundColor: '#F5F5F5',
+                                backgroundColor: amountEditable ? '#F5F5F5' : '#e0e0e0',
                                 paddingHorizontal: 10,
                                 fontSize: 14,
                                 color: '#000',
                             }}
+                            editable={amountEditable}
                         />
                         {amountError ? (
                             <Text style={{ color: 'red', fontSize: 12, marginTop: 3, marginLeft: 5 }}>
@@ -612,22 +667,28 @@ const AddService = () => {
                     {/* Submit Button */}
                     <TouchableOpacity
                         onPress={handleSubmit}
+                        disabled={submitLoading} // ✅ Disable button when loading
                         style={{
-                            backgroundColor: '#173161',
+                            backgroundColor: submitLoading ? '#999' : '#173161', // ✅ Change color when loading
                             borderRadius: 10,
                             paddingVertical: 12,
                             alignItems: 'center',
                             marginTop: 10,
                             marginBottom: 40,
+                            opacity: submitLoading ? 0.7 : 1, // ✅ Reduce opacity when loading
                         }}>
-                        <Text
-                            style={{
-                                color: '#fff',
-                                fontSize: 16,
-                                fontFamily: 'Inter-SemiBold',
-                            }}>
-                            {editService ? 'Update Service' : 'Add Service'}
-                        </Text>
+                        {submitLoading ? (
+                            <ActivityIndicator size="small" color="#fff" /> // ✅ Show loader
+                        ) : (
+                            <Text
+                                style={{
+                                    color: '#fff',
+                                    fontSize: 16,
+                                    fontFamily: 'Inter-SemiBold',
+                                }}>
+                                {editService ? 'Update Service' : 'Add Service'}
+                            </Text>
+                        )}
                     </TouchableOpacity>
                 </ScrollView>
             </View>

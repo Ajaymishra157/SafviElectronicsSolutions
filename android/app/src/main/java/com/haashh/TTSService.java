@@ -1,4 +1,4 @@
-package com.safvielectricalsolutionsdev;
+package com.safvielectricalsolutions;
 
 import android.speech.tts.Voice;
 import android.app.Service;

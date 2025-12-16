@@ -1,4 +1,4 @@
-import { View, Text, TextInput, ScrollView, Image, TouchableOpacity, ActivityIndicator } from 'react-native'
+import { View, Text, TextInput, ScrollView, Image, TouchableOpacity, ActivityIndicator, FlatList } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import Subheader from '../Commoncomponent/Subheader'
 import Constant from '../Commoncomponent/Constant';
@@ -25,39 +25,39 @@ const SearchServicecustomer = ({ navigation }) => {
     const [latestRequestId, setLatestRequestId] = useState(0);
     const latestRequestIdRef = useRef(0);
 
-    const listPermissions = async () => {
-        // setMainloading(true);
-        const id = await AsyncStorage.getItem('admin_id');
-        const url = `${Constant.URL}${Constant.OtherURL.permision_list}`;
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: id }),
-        });
-        const result = await response.json();
-        if (result.code == "200") {
-            let permissionsData = {};
-            result.payload.forEach((item) => {
-                const permsArray = item.menu_permission.split(',');
-                let permsObject = {};
-                permsArray.forEach((perm) => {
-                    permsObject[perm] = true;
-                });
-                permissionsData[item.menu_name] = permsObject;
-            });
+    // const listPermissions = async () => {
+    //     // setMainloading(true);
+    //     const id = await AsyncStorage.getItem('admin_id');
+    //     const url = `${Constant.URL}${Constant.OtherURL.permision_list}`;
+    //     const response = await fetch(url, {
+    //         method: 'POST',
+    //         headers: { 'Content-Type': 'application/json' },
+    //         body: JSON.stringify({ user_id: id }),
+    //     });
+    //     const result = await response.json();
+    //     if (result.code == "200") {
+    //         let permissionsData = {};
+    //         result.payload.forEach((item) => {
+    //             const permsArray = item.menu_permission.split(',');
+    //             let permsObject = {};
+    //             permsArray.forEach((perm) => {
+    //                 permsObject[perm] = true;
+    //             });
+    //             permissionsData[item.menu_name] = permsObject;
+    //         });
 
-            setPermissions(permissionsData);
-        } else {
-            console.log('Error fetching permissions');
-        }
-        // setMainloading(false);
-    };
+    //         setPermissions(permissionsData);
+    //     } else {
+    //         console.log('Error fetching permissions');
+    //     }
+    //     // setMainloading(false);
+    // };
 
-    useFocusEffect(
-        React.useCallback(() => {
-            listPermissions();
-        }, [])
-    );
+    // useFocusEffect(
+    //     React.useCallback(() => {
+    //         listPermissions();
+    //     }, [])
+    // );
 
     const formatDate = (date) => {
         const day = String(date.getDate()).padStart(2, '0');
@@ -125,6 +125,9 @@ const SearchServicecustomer = ({ navigation }) => {
     };
 
     const handleSelectCompany = (item) => {
+        // ✅ Customer select karne par search text clear karo
+        setSearchTerm('');
+
         setSelectedCompany(item); // Set the selected company
         setIsModalVisible(false);
     };
@@ -295,13 +298,14 @@ const SearchServicecustomer = ({ navigation }) => {
 
             <Modal
                 visible={isModalVisible}
-                onDismiss={() => setIsModalVisible(false)} // Close modal when tapping outside
+                onDismiss={() => setIsModalVisible(false)}
                 contentContainerStyle={{
                     backgroundColor: 'white',
                     borderRadius: 10,
                     padding: 10,
                     width: '90%',
                     alignSelf: 'center',
+                    maxHeight: '80%',
                 }}
             >
                 {loading ? (
@@ -309,31 +313,38 @@ const SearchServicecustomer = ({ navigation }) => {
                         <ActivityIndicator size="large" color="#173161" />
                     </View>
                 ) : Array.isArray(customerlist) && customerlist.length > 0 ? (
-                    customerlist.map((item, index) => (
-                        <TouchableOpacity key={index} onPress={() => handleSelectCompany(item)}>
-                            <View
-                                style={{
-                                    borderRadius: 10,
-                                    padding: 10,
-                                    borderColor: '#E0E0E0',
-                                    borderBottomWidth: 1,
-                                    backgroundColor: '#fff',
-                                    marginBottom: 10,
-                                }}
-                            >
-                                <Text
+                    <FlatList
+                        data={customerlist}
+                        keyExtractor={(item, index) => `customer-${item.customer_id || index}`}
+                        renderItem={({ item, index }) => (
+                            <TouchableOpacity onPress={() => handleSelectCompany(item)}>
+                                <View
                                     style={{
-                                        fontFamily: 'Inter-Regular',
-                                        fontSize: 14,
-                                        color: '#173161',
-                                        textTransform: 'uppercase',
+                                        borderRadius: 10,
+                                        padding: 10,
+                                        borderColor: '#E0E0E0',
+                                        borderBottomWidth: 1,
+                                        backgroundColor: '#fff',
+                                        marginBottom: 10,
                                     }}
                                 >
-                                    {item.full_name}
-                                </Text>
-                            </View>
-                        </TouchableOpacity>
-                    ))
+                                    <Text
+                                        style={{
+                                            fontFamily: 'Inter-Regular',
+                                            fontSize: 14,
+                                            color: '#173161',
+                                            textTransform: 'uppercase',
+                                        }}
+                                    >
+                                        {item.full_name}
+                                    </Text>
+                                </View>
+                            </TouchableOpacity>
+                        )}
+                        keyboardShouldPersistTaps='handled'
+                        style={{ maxHeight: 400 }}
+                        showsVerticalScrollIndicator={true}
+                    />
                 ) : (
                     <Text
                         style={{

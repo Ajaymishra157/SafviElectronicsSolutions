@@ -19,6 +19,9 @@ const Userslist = ({ navigation }) => {
     const [permissions, setPermissions] = useState([]);
     const [loading, setLoading] = useState(false);
 
+    const [deleteStaffModalVisible, setDeleteStaffModalVisible] = useState(false);
+    const [staffToDelete, setStaffToDelete] = useState(null);
+
     useEffect(() => {
         const loadUserId = async () => {
             try {
@@ -128,22 +131,28 @@ const Userslist = ({ navigation }) => {
         setMainloading(false);
     };
 
-    const confirmDelete = () => {
-        Alert.alert(
-            "Delete Staff",
-            `Are you sure you want to delete ${selecteduser} Staff?`,
-            [
-                {
-                    text: "Cancel",
-                    style: "cancel"
-                },
-                {
-                    text: "Yes",
-                    onPress: () => handleDelete(selecteduserid)
-                }
-            ]
-        );
+    // const confirmDelete = () => {
+    //     Alert.alert(
+    //         "Delete Staff",
+    //         `Are you sure you want to delete ${selecteduser} Staff?`,
+    //         [
+    //             {
+    //                 text: "Cancel",
+    //                 style: "cancel"
+    //             },
+    //             {
+    //                 text: "Yes",
+    //                 onPress: () => handleDelete(selecteduserid)
+    //             }
+    //         ]
+    //     );
+    // };
+
+    const confirmDelete = (staff) => {
+        setStaffToDelete(staff);
+        setDeleteStaffModalVisible(true);
     };
+
 
     const openModal = (item, x, y) => {
         setModalPosition({ top: y - 15, left: x - 110 });
@@ -263,7 +272,7 @@ const Userslist = ({ navigation }) => {
                         </TouchableOpacity>
                         {/* )} */}
                         {selecteduserid != userid && (
-                            <TouchableOpacity onPress={() => { confirmDelete(); setModalvisible(false); }} style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+                            <TouchableOpacity onPress={() => { confirmDelete({ name: selecteduser, id: selecteduserid }); setModalvisible(false); }} style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
                                 <Image source={require('../../assets/trash-bin.png')} style={{ height: 20, width: 20, tintColor: '#173161' }} />
                                 <Text style={{ fontSize: 16, fontFamily: 'Inter-Medium', color: '#173161' }}>Delete</Text>
                             </TouchableOpacity>
@@ -271,6 +280,107 @@ const Userslist = ({ navigation }) => {
                     </View>
                 </TouchableOpacity>
             </Modal>
+            <Modal
+                visible={deleteStaffModalVisible}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setDeleteStaffModalVisible(false)}
+            >
+                <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={() => setDeleteStaffModalVisible(false)}
+                    style={{
+                        flex: 1,
+                        backgroundColor: 'rgba(0,0,0,0.5)',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        padding: 20,
+                    }}
+                >
+                    <View
+                        style={{
+                            backgroundColor: '#fff',
+                            borderRadius: 12,
+                            padding: 20,
+                            width: '80%',
+                            alignItems: 'center',
+                        }}
+                        onStartShouldSetResponder={(e) => e.stopPropagation()}
+                    >
+                        <Text
+                            style={{
+                                fontFamily: 'Inter-Bold',
+                                fontSize: 18,
+                                color: '#D9534F',
+                                marginBottom: 8,
+                                textAlign: 'center',
+                            }}
+                        >
+                            Delete Staff
+                        </Text>
+
+                        <Text
+                            style={{
+                                fontFamily: 'Inter-Regular',
+                                fontSize: 14,
+                                color: '#555',
+                                textAlign: 'center',
+                                marginBottom: 20,
+                            }}
+                        >
+                            Are you sure you want to delete "{staffToDelete?.name}" staff?
+                        </Text>
+
+                        <View style={{ flexDirection: 'row', justifyContent: 'center', width: '100%' }}>
+
+                            {/* CANCEL BUTTON */}
+                            <TouchableOpacity
+                                onPress={() => setDeleteStaffModalVisible(false)}
+                                style={{
+                                    flex: 1,
+                                    backgroundColor: '#ccc',
+                                    paddingVertical: 10,
+                                    borderRadius: 8,
+                                    marginRight: 5,
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <Text style={{
+                                    color: '#173161',
+                                    fontFamily: 'Inter-SemiBold',
+                                }}>
+                                    No
+                                </Text>
+                            </TouchableOpacity>
+
+                            {/* DELETE BUTTON */}
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setDeleteStaffModalVisible(false);
+                                    handleDelete(staffToDelete?.id);
+                                }}
+                                style={{
+                                    flex: 1,
+                                    backgroundColor: '#D9534F',
+                                    paddingVertical: 10,
+                                    borderRadius: 8,
+                                    marginLeft: 5,
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <Text style={{
+                                    color: '#fff',
+                                    fontFamily: 'Inter-SemiBold',
+                                }}>
+                                    Yes
+                                </Text>
+                            </TouchableOpacity>
+
+                        </View>
+                    </View>
+                </TouchableOpacity>
+            </Modal>
+
         </View>
     )
 }

@@ -1,4 +1,4 @@
-import { View, Text, TextInput, ScrollView, Image, TouchableOpacity, ActivityIndicator } from 'react-native'
+import { View, Text, TextInput, ScrollView, Image, TouchableOpacity, ActivityIndicator, FlatList } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import Subheader from '../Commoncomponent/Subheader'
 import Constant from '../Commoncomponent/Constant';
@@ -125,6 +125,7 @@ const SearchCustomer = ({ navigation }) => {
     };
 
     const handleSelectCompany = (item) => {
+        setSearchTerm('');
         setSelectedCompany(item); // Set the selected company
         setIsModalVisible(false);
     };
@@ -280,7 +281,7 @@ const SearchCustomer = ({ navigation }) => {
             </View> */}
             <View style={{ margin: 10 }}>
                 <MyButton
-                    btnname="Add Order"
+                    btnname="Add Project"
                     background={selectedCompany ? "#173161" : "#D3D3D3"}
                     fontsize={18}
                     textcolor={selectedCompany ? "#fff" : "#000"}
@@ -301,13 +302,14 @@ const SearchCustomer = ({ navigation }) => {
 
             <Modal
                 visible={isModalVisible}
-                onDismiss={() => setIsModalVisible(false)} // Close modal when tapping outside
+                onDismiss={() => setIsModalVisible(false)}
                 contentContainerStyle={{
                     backgroundColor: 'white',
                     borderRadius: 10,
                     padding: 10,
                     width: '90%',
-                    alignSelf: 'center', // Center the modal horizontally
+                    alignSelf: 'center',
+                    maxHeight: '80%', // ✅ Maximum height for scroll
                 }}
             >
                 {loading ? (
@@ -315,21 +317,48 @@ const SearchCustomer = ({ navigation }) => {
                         <ActivityIndicator size="large" color="#173161" />
                     </View>
                 ) : (
-                    customerlist.length > 0 ? (
-                        customerlist.map((item, index) => (
-                            <TouchableOpacity key={index} onPress={() => handleSelectCompany(item)}>
-                                <View style={{ borderRadius: 10, padding: 10, borderColor: '#E0E0E0', borderBottomWidth: 1, backgroundColor: '#fff', marginBottom: 10, }} >
-                                    <Text style={{ fontFamily: 'Inter-Regular', fontSize: 14, color: '#173161', textTransform: 'uppercase', }} >
+                    <FlatList
+                        data={customerlist}
+                        keyExtractor={(item, index) => `customer-${item.c_id || index}`}
+                        renderItem={({ item, index }) => (
+                            <TouchableOpacity
+                                onPress={() => handleSelectCompany(item)}
+                                style={{ padding: 5 }}
+                            >
+                                <View style={{
+                                    borderRadius: 10,
+                                    padding: 10,
+                                    borderColor: '#E0E0E0',
+                                    borderBottomWidth: 1,
+                                    backgroundColor: '#fff',
+                                    marginBottom: 10,
+                                }}>
+                                    <Text style={{
+                                        fontFamily: 'Inter-Regular',
+                                        fontSize: 14,
+                                        color: '#173161',
+                                        textTransform: 'uppercase',
+                                    }}>
                                         {item.full_name}{item.area ? ` (${item.area})` : ''}
                                     </Text>
                                 </View>
                             </TouchableOpacity>
-                        ))
-                    ) : (
-                        <Text style={{ fontFamily: 'Inter-Regular', fontSize: 14, color: '#173161' }}>
-                            No results found
-                        </Text>
-                    )
+                        )}
+                        style={{ maxHeight: 400 }} // ✅ Fixed height for scroll
+                        showsVerticalScrollIndicator={true}
+                        keyboardShouldPersistTaps="handled" // ✅ Keyboard handling
+                        ListEmptyComponent={
+                            <Text style={{
+                                fontFamily: 'Inter-Regular',
+                                fontSize: 14,
+                                color: '#173161',
+                                textAlign: 'center',
+                                padding: 20
+                            }}>
+                                No results found
+                            </Text>
+                        }
+                    />
                 )}
             </Modal>
         </View>

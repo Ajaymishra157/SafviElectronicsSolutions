@@ -312,7 +312,7 @@ const CreatePurchase = ({ navigation }) => {
 
             if (currentUpdateMode) {
                 // In update mode, show ALL products without filtering
-                productlist = result.Payload.map((item) => ({
+                productlist = result.payload.map((item) => ({
                     label: item.product_name,
                     value: item.product_id,
                     price: item.product_price,
@@ -321,7 +321,7 @@ const CreatePurchase = ({ navigation }) => {
                 }));
             } else {
                 // Normal mode: filter out products that exist in temporderlist
-                productlist = result.Payload
+                productlist = result.payload
                     .filter(item => !existingProductIds.includes(item.product_id))
                     .map((item) => ({
                         label: item.product_name,

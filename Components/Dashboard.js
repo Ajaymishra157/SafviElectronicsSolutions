@@ -378,7 +378,7 @@ const Dashboard = ({ navigation }) => {
     if (loading) {
         return (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <ActivityIndicator size="large" color="#0a326e" />
+                <ActivityIndicator size="large" color="#173161" />
             </View>
         );
     }
@@ -425,7 +425,7 @@ const Dashboard = ({ navigation }) => {
 
                         <View style={{ paddingHorizontal: 5 }}>
                             <View style={{ height: 20, width: '100%', backgroundColor: '#ccc', borderRadius: 5, overflow: 'hidden', position: 'relative', }} >
-                                <View style={{ height: '100%', width: `${progressPercent}%`, backgroundColor: '#0a326e', position: 'absolute', top: 0, left: 0, }} />
+                                <View style={{ height: '100%', width: `${progressPercent}%`, backgroundColor: '#173161', position: 'absolute', top: 0, left: 0, }} />
                             </View>
                         </View>
                         <Text style={{ fontFamily: 'Inter-SemiBold', color: '#173161', fontSize: 12, marginHorizontal: 10, textAlign: 'right' }}>{progressPercent}%
@@ -449,10 +449,10 @@ const Dashboard = ({ navigation }) => {
 
 
             <View style={{ flex: 1, padding: 10, justifyContent: 'space-between' }}>
-                <ScrollView keyboardShouldPersistTaps='handled' >
+                <ScrollView keyboardShouldPersistTaps='handled' contentContainerStyle={{ paddingBottom: 80 }} >
                     {/* Permissions-Based UI */}
                     {/* {hasPermission("Users") || hasPermission("Category") || hasPermission("Sub Category") ? ( */}
-                    {usertype !== 'Office Staff' && (
+                    {usertype == 'Admin' && (
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, borderRadius: 10, borderWidth: 0.5, borderColor: '#DCDCDC', backgroundColor: '#fff', elevation: 5 }}>
                             {/* {hasPermission("Users") && */}
                             <PermissionButton navigation={navigation} route="Categorylist" image="category" label="Category" />
@@ -470,12 +470,12 @@ const Dashboard = ({ navigation }) => {
                     {/* ) : null} */}
 
                     {/* {hasPermission("Products") || hasPermission("Customers") || hasPermission("Orders") ? ( */}
-                    {usertype !== 'Office Staff' && (
+                    {usertype == 'Admin' && (
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, backgroundColor: '#fff', borderRadius: 10, borderWidth: 0.5, borderColor: '#DCDCDC', elevation: 5, marginTop: 10 }}>
                             {/* {hasPermission("Products") &&  */}
                             <PermissionButton navigation={navigation} route="Userslist" image="users" label="Staffs" />
                             <PermissionButton navigation={navigation} route="Customerlist" image="customers" label="Customers" />
-                            <PermissionButton navigation={navigation} route="OrderList" image="orders" label="Orders" />
+                            <PermissionButton navigation={navigation} route="OrderList" image="orders" label="Projects" />
 
                             {/* {hasPermission("Customers") && */}
                             {/* <PermissionButton navigation={navigation} route="VendorsList" image="customers" label="Vendors" /> */}
@@ -488,14 +488,16 @@ const Dashboard = ({ navigation }) => {
                     {/* ) : null} */}
 
                     {/* {hasPermission("Market Visit") || hasPermission("Delivery Report") || hasPermission("Sales Report") ? ( */}
-                    {usertype !== 'Office Staff' && (
+                    {usertype == 'Admin' && (
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, backgroundColor: '#fff', borderRadius: 10, borderWidth: 0.5, borderColor: '#DCDCDC', elevation: 5, marginTop: 10 }}>
                             {/* {hasPermission("Market Visit") &&  */}
                             {/* <PermissionButton navigation={navigation} route="Marketvisit" image="products" label="Market Visit" /> */}
-                            <PermissionButton navigation={navigation} route="VendorsList" image="customers" label="Vendors" />
+                            {/* <PermissionButton navigation={navigation} route="VendorsList" image="customers" label="Vendors" />
 
-                            <PermissionButton navigation={navigation} route="Purchaselist" image="purchase" label="Purchase" />
+                            <PermissionButton navigation={navigation} route="Purchaselist" image="purchase" label="Purchase" /> */}
                             <PermissionButton navigation={navigation} route="Servicelist" image="service" label="Service" />
+                            <PermissionButton navigation={navigation} route="AddAttendance" image="attendance" label="My Attendance" />
+                            <PermissionButton navigation={navigation} route="StaffAttendance" image="attendance" label="Staff Attendance" />
 
                             {/* {hasPermission("Sales Report") && */}
                             {/* <PermissionButton navigation={navigation} route="SalesReport" image="sales" label="Sales Report" /> */}
@@ -505,42 +507,59 @@ const Dashboard = ({ navigation }) => {
 
                         </View>
                     )}
+
+                    {/* {usertype == 'Admin' && (
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, backgroundColor: '#fff', borderRadius: 10, borderWidth: 0.5, borderColor: '#DCDCDC', elevation: 5, marginTop: 10 }}>
+                            {/* {hasPermission("Salesman Report") &&  */}
+                    {/* <PermissionButton navigation={navigation} route="SalesReport" image="sales" label="Sales Report" /> */}
+
+                    {/* <PermissionButton navigation={navigation} route="StockReport" image="stock" label="Stock Report" /> */}
+
+                    {/* {hasPermission("Party Ledger") &&  */}
+                    {/* <PermissionButton navigation={navigation} route="Partyledger" image="ledger" label="Party Ledger" /> */}
+
+                    {/* {hasPermission("LMTD") &&  */}
+                    {/* <PermissionButton navigation={navigation} route="LMTDReport" image="products" label="LMTD" /> */}
+
+                    {/* </View> */}
+                    {/* )} */}
+
                     {/* // ) : null} */}
 
                     {/* {hasPermission("Delivery Man Report") || hasPermission("Customer Type") || hasPermission("Payment Type1") ? ( */}
-                    {usertype == 'Office Staff' && (
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, backgroundColor: '#fff', borderRadius: 10, borderWidth: 0.5, borderColor: '#DCDCDC', elevation: 5, marginTop: 10 }}>
-                            {/* {hasPermission("Payment Type1") && */}
-                            {/* <PermissionButton navigation={navigation} route="PaymentList" image="payment" label="Payment Type" /> */}
-                            <PermissionButton navigation={navigation} route="AddAttendance" image="attendance" label="Attendance" />
-                            <PermissionButton navigation={navigation} route="MyServices" image="service" label="My Services" />
+                    {[
+                        'office staff',
+                        'technician',
+                        'half technician',
+                        'service engineer',
+                        'helper',
+                        'febricator',
+                        'accountant',
+                        'management'
+                    ].includes((usertype || "").toLowerCase()) && (
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, backgroundColor: '#fff', borderRadius: 10, borderWidth: 0.5, borderColor: '#DCDCDC', elevation: 5, marginTop: 10 }}>
+                                {/* {hasPermission("Payment Type1") && */}
+                                {/* <PermissionButton navigation={navigation} route="PaymentList" image="payment" label="Payment Type" /> */}
+                                <PermissionButton navigation={navigation} route="AddAttendance" image="attendance" label="Attendance" />
+                                {(usertype == 'Service Engineer' ||
+                                    usertype == 'Technician' ||
+                                    usertype == 'Half Technician' ||
+                                    usertype == 'Helper') && (
+                                        <PermissionButton navigation={navigation} route="MyServices" image="service" label="My Services" />
+                                    )}
 
-                            {/* {hasPermission("Customer Type") && */}
-                            {/* <PermissionButton navigation={navigation} route="Customercategory" image="customer" label="Customer Type" /> */}
+                                {/* {hasPermission("Customer Type") && */}
+                                {/* <PermissionButton navigation={navigation} route="Customercategory" image="customer" label="Customer Type" /> */}
 
-                            {/* {hasPermission("Delivery Man Report") && */}
-                            {/* <PermissionButton navigation={navigation} route="DeliveryManReport" image="deliveryman" label="Delivery Man Report" /> */}
+                                {/* {hasPermission("Delivery Man Report") && */}
+                                {/* <PermissionButton navigation={navigation} route="DeliveryManReport" image="deliveryman" label="Delivery Man Report" /> */}
 
-                        </View>
-                    )}
+                            </View>
+                        )}
                     {/* ) : null} */}
 
                     {/* {hasPermission("Party Ledger") || hasPermission("Salesman Report") || hasPermission("LMTD") ? ( */}
-                    {usertype !== 'Office Staff' && (
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, backgroundColor: '#fff', borderRadius: 10, borderWidth: 0.5, borderColor: '#DCDCDC', elevation: 5, marginTop: 10 }}>
-                            {/* {hasPermission("Salesman Report") &&  */}
-                            <PermissionButton navigation={navigation} route="SalesReport" image="sales" label="Sales Report" />
 
-                            <PermissionButton navigation={navigation} route="StockReport" image="stock" label="Stock Report" />
-
-                            {/* {hasPermission("Party Ledger") &&  */}
-                            {/* <PermissionButton navigation={navigation} route="Partyledger" image="ledger" label="Party Ledger" /> */}
-
-                            {/* {hasPermission("LMTD") &&  */}
-                            {/* <PermissionButton navigation={navigation} route="LMTDReport" image="products" label="LMTD" /> */}
-
-                        </View>
-                    )}
                     {/* ) : null} */}
 
                     {/* {hasPermission("Stock Entry") || hasPermission("Stock Report") || hasPermission("Purchase Entry") ? ( */}
@@ -635,7 +654,7 @@ const Dashboard = ({ navigation }) => {
                                 flexDirection: 'row',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                backgroundColor: '#0a326e',
+                                backgroundColor: '#173161',
                                 paddingVertical: 12,
                                 paddingHorizontal: 12,
                                 borderRadius: 25,
@@ -660,7 +679,7 @@ const Dashboard = ({ navigation }) => {
                                 fontSize: 16,
                                 fontFamily: 'Inter-SemiBold',
                             }}>
-                                Create New Order
+                                Create New Project
                             </Text>
                         </TouchableOpacity>
                     </View>
@@ -739,7 +758,7 @@ const Dashboard = ({ navigation }) => {
                     )
                 )}
                 <View style={{ marginTop: 10 }}>
-                    <TouchableOpacity onPress={handleOkPress} style={{ width: "100%", backgroundColor: '#0a326e', paddingVertical: 7, borderRadius: 20, alignItems: 'center' }}>
+                    <TouchableOpacity onPress={handleOkPress} style={{ width: "100%", backgroundColor: '#173161', paddingVertical: 7, borderRadius: 20, alignItems: 'center' }}>
                         <Text style={{ color: '#fff', fontSize: 14, fontFamily: 'Inter-Medium' }}>
                             OK
                         </Text>

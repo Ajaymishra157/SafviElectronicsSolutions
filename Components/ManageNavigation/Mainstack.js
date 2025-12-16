@@ -64,6 +64,7 @@ import SalesReportList from '../Reports/SalesReportList';
 import StockReport from '../Reports/StockReport';
 import StockReportList from '../Reports/StockReportList';
 import MyServices from '../ManageService/MyServices';
+import StaffAttendance from '../ManageAttendance/StaffAttendance';
 
 
 const Mainstack = () => {
@@ -170,6 +171,7 @@ const Mainstack = () => {
 
         <stack.Screen name='AttendanceList' component={AttendanceList} options={{ headerShown: false }} />
         <stack.Screen name='AddAttendance' component={AddAttendance} options={{ headerShown: false }} />
+        <stack.Screen name='StaffAttendance' component={StaffAttendance} options={{ headerShown: false }} />
 
 
         <stack.Screen name='SalesReport' component={SalesReport} options={{ headerShown: false }} />

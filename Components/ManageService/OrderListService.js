@@ -8,7 +8,8 @@ import {
     ActivityIndicator,
     StatusBar,
     ScrollView,
-    Image
+    Image,
+    Modal
 } from 'react-native'
 import React, { useState, useEffect, useCallback } from 'react'
 import { useFocusEffect } from '@react-navigation/native'
@@ -18,13 +19,18 @@ import Constant from '../Commoncomponent/Constant'
 
 
 const OrderListService = ({ navigation, route }) => {
-    const { customerid, selectedOrderNo, customerName, staffName } = route.params || {}
+    const { customerid, selectedOrderNo, customerName, staffName, ProductId } = route.params || {}
+    console.log("product id ye hai bhai", ProductId);
 
-    console.log("staff Name ye hai", staffName);
+
     const [orderList, setOrderList] = useState([])
     const [filteredOrders, setFilteredOrders] = useState([])
     const [selectedOrder, setSelectedOrder] = useState(selectedOrderNo || null);
+    const [products, setProducts] = useState([]);
 
+    const [showProductsModal, setShowProductsModal] = useState(false) // ✅ Modal for products
+    const [selectedOrderDetails, setSelectedOrderDetails] = useState(null)
+    const [productsLoading, setProductsLoading] = useState(false)
     const [loading, setLoading] = useState(false)
     const [searchTerm, setSearchTerm] = useState('')
     const [searchTimeout, setSearchTimeout] = useState(null)
@@ -49,7 +55,8 @@ const OrderListService = ({ navigation, route }) => {
                     order_no: item.order_no,
                     customer_name: item.customer_name || '',
                     order_date: item.order_date || '',
-                    status: item.status || 'Pending'
+                    status: item.status || 'Pending',
+                    order_id: item.order_id
                 }))
                 setOrderList(formatted)
                 setFilteredOrders(formatted)
@@ -64,6 +71,52 @@ const OrderListService = ({ navigation, route }) => {
         } finally {
             setLoading(false)
         }
+    }
+
+    const fetchOrderProducts = async (orderNo) => {
+        if (!orderNo) return
+
+        setProductsLoading(true)
+        try {
+            const url = `${Constant.URL}${Constant.OtherURL.orderno_wise_orderlist}`
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ order_no: orderNo }),
+            })
+            const result = await response.json()
+
+            if (result.code == 200 && result.payload) {
+
+                setProducts(result.payload)
+                setShowProductsModal(true)
+
+            } else {
+                setProducts([])
+                ToastAndroid.show('No products found for this order', ToastAndroid.SHORT)
+            }
+        } catch (error) {
+            console.log('Error fetching products:', error)
+            ToastAndroid.show('Failed to load products', ToastAndroid.SHORT)
+        } finally {
+            setProductsLoading(false)
+        }
+    }
+
+
+    // ✅ Handle product selection
+    const handleProductSelect = (product) => {
+        setShowProductsModal(false)
+        navigation.navigate('AddService', {
+            OrderId: selectedOrderDetails?.order_id || product.order_id,
+            orderNo: selectedOrderDetails?.order_no,
+            customerid: customerid,
+            customerName: customerName,
+            productId: product.product_id,
+            productName: product.item_name,
+            service: route.params?.service || null,
+            staffName: staffName
+        })
     }
 
     // Handle search functionality
@@ -91,11 +144,10 @@ const OrderListService = ({ navigation, route }) => {
     }
 
     // Handle order selection
-    const handleOrderSelect = (orderNo) => {
-        navigation.replace('AddService', {
-            orderId: item.order_id,
-            orderNo: item.order_no
-        })
+    // ✅ Handle order selection - Show products instead of going directly to service
+    const handleOrderSelect = (order) => {
+        setSelectedOrderDetails(order)
+        fetchOrderProducts(order.order_no)
     }
 
     // Format date
@@ -129,6 +181,100 @@ const OrderListService = ({ navigation, route }) => {
         }, [customerid])
     )
 
+    const renderProductItem = ({ item, index }) => {
+        // ✅ Check if both order_no AND product_id match
+        const isSelected = selectedOrder === item.order_no && ProductId === item.product_id;
+
+        return (
+            <TouchableOpacity
+                style={{
+                    backgroundColor: isSelected ? '#e0e9ff' : '#FFFFFF',
+                    borderRadius: 10,
+                    padding: 15,
+                    marginHorizontal: 10,
+                    marginBottom: 8,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 3,
+                    elevation: 3,
+                    borderLeftWidth: 4,
+                    borderLeftColor: isSelected ? '#007BFF' : '#173161'
+                }}
+                onPress={() => handleProductSelect(item)}
+            >
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <View style={{ flex: 1 }}>
+                        <Text style={{
+                            fontFamily: 'Inter-Bold',
+                            fontSize: 16,
+                            color: isSelected ? '#007BFF' : '#173161',
+                            marginBottom: 6
+                        }}>
+                            {item.item_name || 'Product Name'}
+                            {isSelected && (
+                                <Text style={{
+                                    fontSize: 12,
+                                    color: '#007BFF',
+                                    fontFamily: 'Inter-Regular'
+                                }}>
+                                    {' '}✓ Selected
+                                </Text>
+                            )}
+                        </Text>
+
+                        {item.product_id && (
+                            <Text style={{
+                                fontFamily: 'Inter-Regular',
+                                fontSize: 14,
+                                color: '#666',
+                                marginBottom: 4
+                            }}>
+                                Order date: {formatDate(item.order_date)}
+                            </Text>
+                        )}
+
+                        {item.item_qty && (
+                            <Text style={{
+                                fontFamily: 'Inter-Regular',
+                                fontSize: 14,
+                                color: isSelected ? '#007BFF' : '#666',
+                                marginBottom: 4
+                            }}>
+                                Qty: {item.item_qty}
+                            </Text>
+                        )}
+
+                        {item.item_price && (
+                            <Text style={{
+                                fontFamily: 'Inter-Medium',
+                                fontSize: 14,
+                                color: isSelected ? '#007BFF' : '#28A745'
+                            }}>
+                                ₹{item.item_price}
+                            </Text>
+                        )}
+                    </View>
+
+                    <TouchableOpacity
+                        onPress={() => handleProductSelect(item)}
+                        style={{
+                            backgroundColor: isSelected ? '#007BFF20' : '#17316120',
+                            padding: 8,
+                            borderRadius: 50,
+                            marginLeft: 10
+                        }}
+                    >
+                        <Ionicons
+                            name={isSelected ? "checkmark-circle" : "construct-outline"}
+                            size={20}
+                            color={isSelected ? '#007BFF' : '#173161'}
+                        />
+                    </TouchableOpacity>
+                </View>
+            </TouchableOpacity>
+        );
+    }
     // Render each order item
     const renderOrderItem = ({ item, index }) => (
         <TouchableOpacity
@@ -147,16 +293,7 @@ const OrderListService = ({ navigation, route }) => {
                 alignItems: 'center',
                 justifyContent: 'space-between'
             }}
-            onPress={() =>
-                navigation.navigate('AddService', {
-                    orderId: item.order_id,
-                    orderNo: item.order_no,
-                    customerid: customerid,
-                    customerName: item.customer_name,
-                    service: route.params?.service || null,
-                    staffName: staffName
-                })
-            }
+            onPress={() => handleOrderSelect(item)}
         >
             <View style={{ flex: 1 }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -175,7 +312,7 @@ const OrderListService = ({ navigation, route }) => {
                             color: '#666',
                             marginBottom: 8
                         }}>
-                            {item.company_name}
+                            {item.customer_name}
                         </Text>
                     </View>
                     <View style={{
@@ -195,26 +332,17 @@ const OrderListService = ({ navigation, route }) => {
                     </View>
                 </View>
 
-                <Text style={{
+                {/* <Text style={{
                     fontFamily: 'Inter-Regular',
                     fontSize: 12,
                     color: '#999'
                 }}>
                     Order Date: {formatDate(item.order_date)}
-                </Text>
+                </Text> */}
             </View>
 
             <TouchableOpacity
-                onPress={() =>
-                    navigation.navigate('AddService', {
-                        orderId: item.order_id,
-                        orderNo: item.order_no,
-                        customerid: customerid,
-                        customerName: item.customer_name,
-                        service: route.params?.service || null,
-                        staffName: staffName
-                    })
-                }
+                onPress={() => handleOrderSelect(item)}
                 style={{
                     marginLeft: 10,
                     backgroundColor: '#17316120',
@@ -222,7 +350,7 @@ const OrderListService = ({ navigation, route }) => {
                     borderRadius: 50
                 }}
             >
-                <Ionicons name="chevron-forward" size={20} color="#173161" />
+                <Ionicons name="list-outline" size={20} color="#173161" />
             </TouchableOpacity>
         </TouchableOpacity>
     )
@@ -386,7 +514,7 @@ const OrderListService = ({ navigation, route }) => {
                         flexDirection: 'row',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        backgroundColor: '#0a326e',
+                        backgroundColor: '#173161',
                         paddingVertical: 12,
                         paddingHorizontal: 16,
                         borderRadius: 25,
@@ -407,6 +535,109 @@ const OrderListService = ({ navigation, route }) => {
                     </Text>
                 </TouchableOpacity>
             </View>
+
+            <Modal
+                visible={showProductsModal}
+                animationType="slide"
+                transparent={true}
+                onRequestClose={() => setShowProductsModal(false)}
+            >
+                <View style={{
+                    flex: 1,
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    justifyContent: 'flex-end'
+                }}>
+                    <View style={{
+                        backgroundColor: '#FFF',
+                        borderTopLeftRadius: 20,
+                        borderTopRightRadius: 20,
+                        maxHeight: '80%',
+                        paddingBottom: 20
+                    }}>
+                        {/* Modal Header */}
+                        <View style={{
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            padding: 20,
+                            borderBottomWidth: 1,
+                            borderBottomColor: '#E0E0E0'
+                        }}>
+                            <View>
+                                <Text style={{
+                                    fontFamily: 'Inter-Bold',
+                                    fontSize: 18,
+                                    color: '#173161'
+                                }}>
+                                    Select Product
+                                </Text>
+                                <Text style={{
+                                    fontFamily: 'Inter-Regular',
+                                    fontSize: 14,
+                                    color: '#666',
+                                    marginTop: 4
+                                }}>
+                                    Order: {selectedOrderDetails?.order_no}
+                                </Text>
+                            </View>
+                            <TouchableOpacity
+                                onPress={() => setShowProductsModal(false)}
+                                style={{
+                                    padding: 5
+                                }}
+                            >
+                                <Ionicons name="close" size={24} color="#666" />
+                            </TouchableOpacity>
+                        </View>
+
+                        {/* Products List */}
+                        <View>
+                            {productsLoading ? (
+                                <View style={{
+                                    padding: 40,
+                                    alignItems: 'center'
+                                }}>
+                                    <ActivityIndicator size="large" color="#173161" />
+                                    <Text style={{
+                                        fontFamily: 'Inter-Medium',
+                                        fontSize: 14,
+                                        color: '#666',
+                                        marginTop: 10
+                                    }}>
+                                        Loading products...
+                                    </Text>
+                                </View>
+                            ) : products.length > 0 ? (
+                                <FlatList
+                                    data={products}
+                                    renderItem={renderProductItem}
+                                    keyExtractor={(item, index) => `product-${item.product_id}-${index}`}
+                                    showsVerticalScrollIndicator={false}
+                                    contentContainerStyle={{
+                                        paddingVertical: 10
+                                    }}
+                                />
+                            ) : (
+                                <View style={{
+                                    padding: 40,
+                                    alignItems: 'center'
+                                }}>
+                                    <Ionicons name="cube-outline" size={60} color="#CCC" />
+                                    <Text style={{
+                                        fontFamily: 'Inter-Medium',
+                                        fontSize: 16,
+                                        color: '#666',
+                                        marginTop: 10,
+                                        textAlign: 'center'
+                                    }}>
+                                        No products found in this order
+                                    </Text>
+                                </View>
+                            )}
+                        </View>
+                    </View>
+                </View>
+            </Modal>
 
         </View>
     )

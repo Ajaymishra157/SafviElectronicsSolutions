@@ -81,7 +81,7 @@ const CreateOrder = ({ navigation }) => {
             //         { text: 'Yes', onPress: () => { cancelupdateOrderApi(); navigation.goBack(null); } },
             //     ]);
             // } else {
-            Alert.alert('Cancel Order', 'Are you sure want to cancel the order ?', [
+            Alert.alert('Cancel Project', 'Are you sure want to cancel the Project ?', [
                 {
                     text: 'No',
                     onPress: () => null,
@@ -287,7 +287,7 @@ const CreateOrder = ({ navigation }) => {
             setItems([]);
             return;
         }
-        const url = `${Constant.URL}${Constant.OtherURL.product_search}`;
+        const url = `${Constant.URL}${Constant.OtherURL.subcategory_wise_product_list}`;
         const response = await fetch(url, {
             method: 'POST',
             headers: {
@@ -296,7 +296,7 @@ const CreateOrder = ({ navigation }) => {
             body: JSON.stringify({
                 category_id: catvalue,
                 subcategory_id: subcatvalue,
-                customer_id: customerid,
+                // customer_id: customerid,
             }),
         });
         const result = await response.json();
@@ -811,7 +811,7 @@ const CreateOrder = ({ navigation }) => {
             await firestore().collection('orders').add(orderFirestore);
 
             ToastAndroid.show(
-                'Your order has been Created successfully!',
+                'Your Project has been Created successfully!',
                 ToastAndroid.SHORT,
                 ToastAndroid.BOTTOM
             );
@@ -899,7 +899,7 @@ const CreateOrder = ({ navigation }) => {
             await firestore().collection('orders').add(orderFirestore);
 
             ToastAndroid.show(
-                'Your order has been Created successfully!',
+                'Your Project has been Created successfully!',
                 ToastAndroid.SHORT,
                 ToastAndroid.BOTTOM
             );
@@ -957,7 +957,7 @@ const CreateOrder = ({ navigation }) => {
         const result = await response.json();
         if (result.code == "200") {
             ToastAndroid.show(
-                'Your order has been Updated successfully!',
+                'Your Project has been Updated successfully!',
                 ToastAndroid.SHORT,
                 ToastAndroid.BOTTOM
             );
@@ -1177,7 +1177,7 @@ const CreateOrder = ({ navigation }) => {
 
     const confirmDelete = () => {
         Alert.alert(
-            "Delete Order",
+            "Delete Project",
             `Are you sure you want to delete this ${selecteduser} item?`,
             [
                 {
@@ -1224,7 +1224,7 @@ const CreateOrder = ({ navigation }) => {
                     //         },
                     //     ]);
                     // } else {
-                    Alert.alert('Cancel Order', 'Are you sure you want to cancel the order?', [
+                    Alert.alert('Cancel Project', 'Are you sure you want to cancel the Project?', [
                         {
                             text: 'No',
                             onPress: () => null,
@@ -1857,11 +1857,11 @@ const CreateOrder = ({ navigation }) => {
                     </ScrollView>
                 )}
             </View>
-            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 5, marginRight: 5 }}>
+            {/* <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 5, marginRight: 5 }}>
                 <TouchableOpacity disabled={!temporderlist || temporderlist.length == 0} onPress={() => setTransportmodal(true)} style={{ backgroundColor: !temporderlist || temporderlist.length === 0 ? '#C5C6D0' : '#173161', borderRadius: 8, paddingVertical: 10, paddingHorizontal: 10, alignItems: 'center' }} >
                     <Image source={require('../../assets/cargo-truck.png')} style={{ height: 20, width: 20, tintColor: !temporderlist || temporderlist.length == 0 ? 'gray' : '#fff' }} />
                 </TouchableOpacity>
-            </View>
+            </View> */}
             {/* Footer */}
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', padding: 10, borderTopWidth: 1, borderColor: '#ccc', }}>
                 {hasmarginPermissions ?
@@ -1906,7 +1906,7 @@ const CreateOrder = ({ navigation }) => {
                     //         },
                     //     ]);
                     // } else {
-                    Alert.alert('Cancel Order', 'Are you sure you want to cancel the order?', [
+                    Alert.alert('Cancel Project', 'Are you sure you want to cancel the Project?', [
                         {
                             text: 'No',
                             onPress: () => null,
@@ -1933,7 +1933,7 @@ const CreateOrder = ({ navigation }) => {
                     {mainloading ? (
                         <ActivityIndicator size="small" color="#ffffff" />
                     ) : (
-                        <Text style={{ color: !temporderlist || temporderlist.length == 0 ? '#000' : '#fff', fontSize: 14, fontFamily: 'Inter-SemiBold' }}>{order_no ? 'Update Order' : 'Create Order'}</Text>
+                        <Text style={{ color: !temporderlist || temporderlist.length == 0 ? '#000' : '#fff', fontSize: 14, fontFamily: 'Inter-SemiBold' }}>{order_no ? 'Update Project' : 'Create Project'}</Text>
                     )}
                 </TouchableOpacity>
             </View>

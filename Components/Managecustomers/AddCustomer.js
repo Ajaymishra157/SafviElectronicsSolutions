@@ -498,7 +498,7 @@ const AddCustomer = ({ navigation, route }) => {
         <TouchableWithoutFeedback onPress={() => { setOpen(false); setGenderOpen(false); Keyboard.dismiss(); }}>
             <View style={{ flex: 1 }}>
                 <Subheader headername={customerdata?.c_id ? 'Update Customer' : 'Add Customer'} />
-                <ScrollView keyboardShouldPersistTaps='handled'>
+                <ScrollView keyboardShouldPersistTaps='handled' contentContainerStyle={{ paddingBottom: 60 }}>
                     {screen != 'orderdetail' &&
                         <>
                             <View style={{ marginBottom: 10, marginTop: 10, zIndex: 10000 }}>
@@ -997,7 +997,7 @@ const AddCustomer = ({ navigation, route }) => {
                     <TouchableOpacity onPress={() => { setNewCategoryModalVisible(false); setNewCategoryName(''); setError(''); }} style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
                         <View onStartShouldSetResponder={(e) => e.stopPropagation()} style={{ width: '80%', backgroundColor: '#fff', paddingHorizontal: 20, paddingBottom: 20, paddingTop: 10, borderRadius: 10 }}>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
-                                <Text style={{ fontSize: 16, fontFamily: 'Inter-Regular', color: '#000' }}>Add New Category</Text>
+                                <Text style={{ fontSize: 16, fontFamily: 'Inter-Regular', color: '#000' }}>Add New Category <Text style={{ color: '#e60000' }}>*</Text></Text>
                                 <TouchableOpacity onPress={() => { setNewCategoryModalVisible(false); setNewCategoryName(''); setError(''); }} style={{ alignSelf: 'center' }}>
                                     <Image source={require('../../assets/close.png')} style={{ height: 15, width: 15, }} />
                                 </TouchableOpacity>
