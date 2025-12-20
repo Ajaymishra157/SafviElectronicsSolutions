@@ -115,7 +115,7 @@ const SearchServicecustomer = ({ navigation }) => {
         const result = await response.json();
         if (requestId === latestRequestIdRef.current) {
             if (result.code == "200") {
-                setCustomerList(result.Payload); // ✅ fixed capitalization
+                setCustomerList(result.payload); // ✅ fixed capitalization
                 setIsModalVisible(true);
             } else {
                 setCustomerList([]);

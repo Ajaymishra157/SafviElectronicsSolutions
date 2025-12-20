@@ -7,6 +7,8 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import Constant from '../Commoncomponent/Constant';
 import Geolocation from 'react-native-geolocation-service';
 import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
+import RNFS from 'react-native-fs';
+
 
 
 const AddAttendance = () => {
@@ -210,7 +212,8 @@ const AddAttendance = () => {
         const Id = await AsyncStorage.getItem('admin_id');
         const currentTime = new Date().toLocaleTimeString('en-GB', { hour12: false });
 
-        const userImageToSend = userimg ? 'data:' + userimg.mime + ';base64,' + userimg.data : null;
+        const userImageToSend = userimg ? userimg.base64 : null;
+        console.log("userImagetosend", userImageToSend)
 
         const payload = {
             staff_id: Id,
@@ -287,28 +290,52 @@ const AddAttendance = () => {
     const currentTime = new Date().toLocaleTimeString('en-GB', { hour12: false });
     const currentDate = new Date().toLocaleDateString();
 
+    const convertImageToBase64 = async (image) => {
+        try {
+            const base64 = await RNFS.readFile(image.path, 'base64');
+            return `data:${image.mime};base64,${base64}`;
+        } catch (error) {
+            console.log('Base64 error:', error);
+            return null;
+        }
+    };
+
+
     const handleOpenCamera = async () => {
         getCurrentLocation();
+
         try {
             Keyboard.dismiss();
+
             const image = await ImagePicker.openCamera({
                 width: 300,
                 height: 400,
-                cropping: false,
+                cropping: true,          // 🔥 EXACT FIX
                 useFrontCamera: true,
-                includeBase64: true,
-                compressImageQuality: 0.7,
+                mediaType: 'photo',
+                forceJpg: true,
+                compressImageQuality: 0.8,
+                cropperToolbarTitle: 'Capture Selfie',
+                cameraType: 'front',
             });
+
+            if (!image) return;
+
+            const base64Image = await convertImageToBase64(image);
+            if (!base64Image) return;
+
             setUserimg({
                 uri: image.path,
                 mime: image.mime,
-                data: image.data
+                base64: base64Image,     // ✅ SAME AS MAM
             });
+
             setPhotoError('');
         } catch (error) {
             console.log('Camera cancelled', error);
         }
     };
+
 
     if (mainloading) {
         return (

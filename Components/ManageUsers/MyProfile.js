@@ -68,7 +68,7 @@ const MyProfile = ({ navigation }) => {
         });
         const result = await response.json();
         if (result.code == "200") {
-            setData(result.Payload[0]);
+            setData(result.payload[0]);
         } else {
             console.log('error while listing product');
         }

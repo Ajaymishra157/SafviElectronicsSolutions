@@ -91,7 +91,7 @@ const Userslist = ({ navigation }) => {
             });
             const result = await response.json();
             if (result.code == "200") {
-                setUserlist(result.Payload);
+                setUserlist(result.payload);
             } else {
                 setUserlist([]);
                 console.log('error while listing category');

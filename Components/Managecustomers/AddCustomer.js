@@ -118,7 +118,7 @@ const AddCustomer = ({ navigation, route }) => {
         });
         const result = await response.json();
         if (result.code == "200") {
-            const formattedusers = result.Payload.map((item) => ({
+            const formattedusers = result.payload.map((item) => ({
                 label: item.user_name,
                 value: item.userid,
             }));

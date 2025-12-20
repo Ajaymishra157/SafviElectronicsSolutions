@@ -51,7 +51,7 @@ const StaffAttendance = () => {
             const result = await response.json();
 
             if (result.code == '200') {
-                const formatted = result.Payload.map(item => ({
+                const formatted = result.payload.map(item => ({
                     label: item.first_name,
                     value: String(item.userid),
                 }));

@@ -1,4 +1,4 @@
-package com.safvielectricalsolutions
+package com.safvielectricalsolutionsdev
 
 import android.app.Application
 import com.facebook.react.PackageList
@@ -10,7 +10,7 @@ import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load
 import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.soloader.SoLoader
-import com.safvielectricalsolutions.TTSPackage;
+import com.safvielectricalsolutionsdev.TTSPackage;
 
 class MainApplication : Application(), ReactApplication {
 

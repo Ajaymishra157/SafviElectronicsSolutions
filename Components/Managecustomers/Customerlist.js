@@ -114,8 +114,8 @@ const Customerlist = ({ navigation }) => {
         });
         const result = await response.json();
         if (result.code == "200") {
-            setAllCustomers(result.Payload); // Save the original list
-            setCustomerList(result.Payload);
+            setAllCustomers(result.payload); // Save the original list
+            setCustomerList(result.payload);
         } else {
             setAllCustomers([]);
             setCustomerList([]);

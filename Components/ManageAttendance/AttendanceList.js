@@ -26,6 +26,10 @@ const AttendanceList = ({ navigation }) => {
     const [loading, setLoading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
 
+    const [modalVisible, setModalVisible] = useState(false);
+    const [selectedImage, setSelectedImage] = useState(null);
+
+
     // Date filter states
     const [showDateFilter, setShowDateFilter] = useState(false);
     const [startDate, setStartDate] = useState(new Date());
@@ -218,15 +222,25 @@ const AttendanceList = ({ navigation }) => {
             {/* Staff Info with Image */}
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
                 {item.dates?.length > 0 && item.dates[item.dates.length - 1].image ? (
-                    <Image
-                        source={{ uri: item.dates[item.dates.length - 1].image }}
-                        style={{
-                            width: 50,
-                            height: 50,
-                            borderRadius: 25,
-                            marginRight: 10,
+                    <TouchableOpacity
+                        onPress={() => {
+                            setSelectedImage({ uri: item.dates[item.dates.length - 1].image });
+                            setModalVisible(true);
                         }}
-                    />
+                    >
+                        <Image
+                            source={{ uri: item.dates[item.dates.length - 1].image }}
+                            style={{
+                                width: 50,
+                                height: 50,
+                                borderRadius: 25,
+                                marginRight: 10,
+                                // ✅ 90 degree rotate karo agar ulti dikh rahi hai
+
+                            }}
+                        />
+                    </TouchableOpacity>
+
                 ) : (
                     <View
                         style={{
@@ -687,6 +701,52 @@ const AttendanceList = ({ navigation }) => {
                     </View>
                 </View>
             </Modal>
+
+
+            <Modal
+                transparent={true}
+                visible={modalVisible}
+                animationType="fade"
+                onRequestClose={() => setModalVisible(false)}
+            >
+                <TouchableOpacity
+                    style={{
+                        flex: 1,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                    }}
+                    onPress={() => setModalVisible(false)}
+                    activeOpacity={1}
+                >
+                    <View
+                        style={{
+                            width: '80%',
+                            height: '40%',
+                            backgroundColor: 'white',
+                            borderRadius: 150,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                        }}
+                        onStartShouldSetResponder={() => true}
+                        onTouchEnd={e => e.stopPropagation()}
+                    >
+                        {selectedImage && (
+                            <Image
+                                source={selectedImage}
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    borderRadius: 150,
+                                    resizeMode: 'stretch',
+
+                                }}
+                            />
+                        )}
+                    </View>
+                </TouchableOpacity>
+            </Modal>
+
         </View>
     );
 };

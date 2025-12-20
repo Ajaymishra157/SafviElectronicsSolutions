@@ -85,7 +85,7 @@ const AddService = () => {
             });
             const result = await response.json();
             if (result.code == "200") {
-                const formatted = result.Payload.map(item => ({
+                const formatted = result.payload.map(item => ({
                     label: item.user_name,
                     value: String(item.userid),
                 }));
@@ -110,7 +110,7 @@ const AddService = () => {
             });
             const result = await response.json();
             if (result.code == "200") {
-                const formatted = result.Payload.map(item => ({
+                const formatted = result.payload.map(item => ({
                     label: item.full_name,
                     value: String(item.c_id),
                 }));

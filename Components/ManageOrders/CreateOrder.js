@@ -37,6 +37,16 @@ const CreateOrder = ({ navigation }) => {
 
     const [temporderlist, setTemporderlist] = useState([]);
     const [randomno, setRandomno] = useState(random_no ? random_no : null);
+    const [cancelModalVisible, setCancelModalVisible] = useState(false);
+    const [visible, setVisible] = useState(false);
+
+    const [productExistModal, setProductExistModal] = useState(false);
+    const [productLabel, setProductLabel] = useState('');
+
+
+
+
+
 
     React.useEffect(() => {
         navigation.setParams({ random_no: randomno });
@@ -68,6 +78,15 @@ const CreateOrder = ({ navigation }) => {
         updatemodeRef.current = updatemode;
     }, [updatemode]);
 
+    const visibleModal = () => {
+        setModalvisible(false); // pehle wala modal band
+        setVisible(true);       // delete modal open
+    };
+
+    const notvisibleModal = () => {
+        setVisible(false);      // delete modal band
+    };
+
     //back Button par Alert
     useEffect(() => {
         const backAction = () => {
@@ -81,14 +100,8 @@ const CreateOrder = ({ navigation }) => {
             //         { text: 'Yes', onPress: () => { cancelupdateOrderApi(); navigation.goBack(null); } },
             //     ]);
             // } else {
-            Alert.alert('Cancel Project', 'Are you sure want to cancel the Project ?', [
-                {
-                    text: 'No',
-                    onPress: () => null,
-                    style: 'cancel',
-                },
-                { text: 'Yes', onPress: () => cancelOrderApiCall() },
-            ]);
+            setCancelModalVisible(true);
+
             // }
             return true; // Prevent default back action
         };
@@ -281,6 +294,7 @@ const CreateOrder = ({ navigation }) => {
 
     // fetch products
     const listProducts = async (forceUpdateMode = false) => {
+        console.log("category id and subcategory id ye hai", catvalue, subcatvalue);
         const currentUpdateMode = forceUpdateMode || updatemodeRef.current;
         if (!catvalue || !subcatvalue) {
             // If no category is selected, set itemsinmodal to an empty array or handle accordingly
@@ -388,25 +402,8 @@ const CreateOrder = ({ navigation }) => {
                 // Show alert if product already exists
                 const selectedOption = items.find(option => option.value == value);
                 const productLabel = selectedOption ? selectedOption.label : value;
-                Alert.alert(
-                    'Product Already Exists',
-                    `The product ${productLabel} is already in the list. Would you like to update the quantity instead?`,
-                    [
-                        {
-                            text: 'No',
-                            onPress: () => console.log('Update canceled'),
-                            style: 'cancel',
-                        },
-                        {
-                            text: 'Yes',
-                            onPress: async () => {
-                                console.log('Proceed with updating the existing product in order');
-                                await updateorderconfirm(); // Call addOrUpdateProduct if user confirms
-                            },
-                        },
-                    ],
-                    { cancelable: false }
-                );
+                setProductLabel(label);
+                setProductExistModal(true);
             } else {
                 // If no existing product or amount is 0, proceed directly with addOrUpdateProduct
                 await updateorderconfirm();
@@ -1052,6 +1049,7 @@ const CreateOrder = ({ navigation }) => {
 
     const closeModal = () => {
         setModalvisible(false);
+        setVisible(false);
     };
     const handleEdit = () => {
         if (selecteduserdata) {
@@ -1176,26 +1174,13 @@ const CreateOrder = ({ navigation }) => {
     };
 
     const confirmDelete = () => {
-        Alert.alert(
-            "Delete Project",
-            `Are you sure you want to delete this ${selecteduser} item?`,
-            [
-                {
-                    text: "Cancel",
-                    style: "cancel"
-                },
-                {
-                    text: "Yes",
-                    onPress: () => {
-                        if (order_no) {
-                            handleconfirmDelete(selectedcorderid);
-                        } else {
-                            handletempDelete(selecteduserid);
-                        }
-                    }
-                }
-            ]
-        );
+        if (order_no) {
+            handleconfirmDelete(selectedcorderid);
+        } else {
+            handletempDelete(selecteduserid);
+        }
+        closeModal();
+
     };
 
     const hasmarginPermissions = permissions['Show Margin'];
@@ -1224,24 +1209,8 @@ const CreateOrder = ({ navigation }) => {
                     //         },
                     //     ]);
                     // } else {
-                    Alert.alert('Cancel Project', 'Are you sure you want to cancel the Project?', [
-                        {
-                            text: 'No',
-                            onPress: () => null,
-                            style: 'cancel',
-                        },
-                        {
-                            text: 'Yes',
-                            onPress: async () => {
-                                try {
-                                    await cancelOrderApiCall(); // Call the API
-                                    navigation.goBack(); // Navigate back after API call
-                                } catch (error) {
-                                    console.error("Error canceling order:", error);
-                                }
-                            },
-                        },
-                    ]);
+                    setCancelModalVisible(true);
+
                     // }
                 }}>
                     <Image source={require('../../assets/arrow_back.png')} style={{ marginLeft: 10, height: 25, width: 25 }} />
@@ -1906,24 +1875,8 @@ const CreateOrder = ({ navigation }) => {
                     //         },
                     //     ]);
                     // } else {
-                    Alert.alert('Cancel Project', 'Are you sure you want to cancel the Project?', [
-                        {
-                            text: 'No',
-                            onPress: () => null,
-                            style: 'cancel',
-                        },
-                        {
-                            text: 'Yes',
-                            onPress: async () => {
-                                try {
-                                    await cancelOrderApiCall(); // Call the API
-                                    navigation.goBack(); // Navigate back after API call
-                                } catch (error) {
-                                    console.error("Error canceling order:", error);
-                                }
-                            },
-                        },
-                    ]);
+                    setCancelModalVisible(true);
+
                     // }
                 }} style={{ backgroundColor: !temporderlist || temporderlist.length === 0 ? '#C5C6D0' : '#e60000', borderRadius: 8, paddingVertical: 10, paddingHorizontal: 20, width: '40%', alignItems: 'center' }}>
                     <Text style={{ color: !temporderlist || temporderlist.length == 0 ? '#000' : '#fff', fontSize: 14, fontFamily: 'Inter-SemiBold' }}>Cancel</Text>
@@ -1945,7 +1898,10 @@ const CreateOrder = ({ navigation }) => {
                             <Image source={require('../../assets/Edit1.png')} style={{ height: 20, width: 20, tintColor: '#173161' }} />
                             <Text style={{ fontSize: 16, fontFamily: 'Inter-Medium', color: '#173161' }}>Edit</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => { confirmDelete(); setModalvisible(false); }} style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+                        <TouchableOpacity onPress={() => {
+                            visibleModal(true);   // delete confirmation modal open
+                            // current modal close
+                        }} style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
                             <Image source={require('../../assets/trash-bin.png')} style={{ height: 20, width: 20, tintColor: '#173161' }} />
                             <Text style={{ fontSize: 16, fontFamily: 'Inter-Medium', color: '#173161' }}>Delete</Text>
                         </TouchableOpacity>
@@ -2167,6 +2123,324 @@ const CreateOrder = ({ navigation }) => {
                     </TouchableOpacity>
                 </TouchableOpacity>
             </Modal>
+            <Modal
+                visible={cancelModalVisible}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setCancelModalVisible(false)}
+            >
+                <View
+                    style={{
+                        flex: 1,
+                        backgroundColor: 'rgba(0,0,0,0.6)',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                    }}
+                >
+                    <View
+                        style={{
+                            backgroundColor: '#fff',
+                            borderRadius: 12,
+                            padding: 20,
+                            width: '80%',
+                            alignSelf: 'center',
+                            shadowColor: '#000',
+                            shadowOffset: { width: 0, height: 4 },
+                            shadowOpacity: 0.25,
+                            shadowRadius: 6,
+                            elevation: 6,
+                        }}
+                    >
+                        <View style={{ alignItems: 'center' }}>
+
+
+                            {/* Title */}
+                            <Text
+                                style={{
+                                    fontFamily: 'Inter-Bold',
+                                    fontSize: 18,
+                                    color: '#E53935',
+                                    marginBottom: 8,
+                                }}
+                            >
+                                Cancel Project
+                            </Text>
+
+                            {/* Message */}
+                            <Text
+                                style={{
+                                    fontFamily: 'Inter-Regular',
+                                    fontSize: 14,
+                                    color: '#555',
+                                    textAlign: 'center',
+                                    marginBottom: 20,
+                                }}
+                            >
+                                Are you sure you want to cancel this project?
+                            </Text>
+
+                            {/* Buttons */}
+                            <View
+                                style={{
+                                    flexDirection: 'row',
+                                    justifyContent: 'space-between',
+                                    width: '100%',
+                                }}
+                            >
+                                {/* Cancel */}
+                                <TouchableOpacity
+                                    onPress={() => setCancelModalVisible(false)}
+                                    style={{
+                                        flex: 1,
+                                        backgroundColor: '#eee',
+                                        paddingVertical: 10,
+                                        borderRadius: 8,
+                                        marginRight: 6,
+                                    }}
+                                >
+                                    <Text
+                                        style={{
+                                            textAlign: 'center',
+                                            color: '#555',
+                                            fontFamily: 'Inter-SemiBold',
+                                        }}
+                                    >
+                                        No
+                                    </Text>
+                                </TouchableOpacity>
+
+                                {/* Confirm */}
+                                <TouchableOpacity
+                                    onPress={async () => {
+                                        try {
+                                            setCancelModalVisible(false);
+                                            await cancelOrderApiCall();
+                                            navigation.goBack();
+                                        } catch (error) {
+                                            console.error('Error canceling order:', error);
+                                        }
+                                    }}
+                                    style={{
+                                        flex: 1,
+                                        backgroundColor: '#E53935',
+                                        paddingVertical: 10,
+                                        borderRadius: 8,
+                                        marginLeft: 6,
+                                    }}
+                                >
+                                    <Text
+                                        style={{
+                                            textAlign: 'center',
+                                            color: '#fff',
+                                            fontFamily: 'Inter-SemiBold',
+                                        }}
+                                    >
+                                        Yes, Cancel
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
+
+            <Modal
+                visible={visible}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={notvisibleModal}
+            >
+                <View
+                    style={{
+                        flex: 1,
+                        backgroundColor: 'rgba(0,0,0,0.6)',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                    }}
+                >
+                    <View
+                        style={{
+                            width: '85%',
+                            backgroundColor: '#FFFFFF',
+                            borderRadius: 16,
+                            padding: 22,
+                            elevation: 5,
+                        }}
+                    >
+                        {/* Title */}
+                        <Text
+                            style={{
+                                fontSize: 18,
+                                fontFamily: 'Inter-Bold',
+                                color: '#1F2937', // dark gray
+                                marginBottom: 8,
+                            }}
+                        >
+                            Delete Confirmation
+                        </Text>
+
+                        {/* Message */}
+                        <Text
+                            style={{
+                                fontSize: 15,
+                                fontFamily: 'Inter-Regular',
+                                color: '#4B5563', // medium gray
+                                marginBottom: 24,
+                            }}
+                        >
+                            Are you sure you want to delete this {selecteduser} item?
+                        </Text>
+
+                        {/* Buttons */}
+                        <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+                            <TouchableOpacity
+                                onPress={notvisibleModal}
+                                style={{
+                                    paddingVertical: 10,
+                                    paddingHorizontal: 18,
+                                    borderRadius: 8,
+                                    backgroundColor: '#E5E7EB',
+                                    marginRight: 12,
+                                }}
+                            >
+                                <Text
+                                    style={{
+                                        fontFamily: 'Inter-Medium',
+                                        color: '#374151',
+                                        fontSize: 14,
+                                    }}
+                                >
+                                    Cancel
+                                </Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                onPress={confirmDelete}
+                                style={{
+                                    paddingVertical: 10,
+                                    paddingHorizontal: 18,
+                                    borderRadius: 8,
+                                    backgroundColor: '#EF4444', // red-500
+                                }}
+                            >
+                                <Text
+                                    style={{
+                                        fontFamily: 'Inter-Medium',
+                                        color: '#FFFFFF',
+                                        fontSize: 14,
+                                    }}
+                                >
+                                    Yes, Delete
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
+
+
+            <Modal
+                visible={productExistModal}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setProductExistModal(false)}
+            >
+                <View
+                    style={{
+                        flex: 1,
+                        backgroundColor: 'rgba(0,0,0,0.6)',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                    }}
+                >
+                    <View
+                        style={{
+                            width: '85%',
+                            backgroundColor: '#FFFFFF',
+                            borderRadius: 16,
+                            padding: 22,
+                            elevation: 6,
+                        }}
+                    >
+                        {/* Title */}
+                        <Text
+                            style={{
+                                fontSize: 18,
+                                fontFamily: 'Inter-Bold',
+                                color: '#1F2937',
+                                marginBottom: 10,
+                            }}
+                        >
+                            Product Already Exists
+                        </Text>
+
+                        {/* Message */}
+                        <Text
+                            style={{
+                                fontSize: 15,
+                                fontFamily: 'Inter-Regular',
+                                color: '#4B5563',
+                                marginBottom: 25,
+                            }}
+                        >
+                            The product {productLabel} is already in the list.
+                            Do you want to update the quantity instead?
+                        </Text>
+
+                        {/* Buttons */}
+                        <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+                            <TouchableOpacity
+                                onPress={() => setProductExistModal(false)}
+                                style={{
+                                    paddingVertical: 10,
+                                    paddingHorizontal: 18,
+                                    borderRadius: 8,
+                                    backgroundColor: '#E5E7EB',
+                                    marginRight: 12,
+                                }}
+                            >
+                                <Text
+                                    style={{
+                                        fontFamily: 'Inter-Medium',
+                                        color: '#374151',
+                                        fontSize: 14,
+                                    }}
+                                >
+                                    No
+                                </Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                onPress={async () => {
+                                    setProductExistModal(false);
+                                    await updateorderconfirm();
+                                }}
+                                style={{
+                                    paddingVertical: 10,
+                                    paddingHorizontal: 18,
+                                    borderRadius: 8,
+                                    backgroundColor: '#2563EB', // blue
+                                }}
+                            >
+                                <Text
+                                    style={{
+                                        fontFamily: 'Inter-Medium',
+                                        color: '#FFFFFF',
+                                        fontSize: 14,
+                                    }}
+                                >
+                                    Yes, Update
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
+
+
+
+
+
             {/* </ScrollView> */}
         </View>
         // </TouchableWithoutFeedback>
