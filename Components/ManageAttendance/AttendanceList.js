@@ -144,13 +144,13 @@ const AttendanceList = ({ navigation }) => {
         }
     };
 
-    const onRefresh = useCallback(() => {
-        setRefreshing(true);
-        const today = new Date();
-        setStartDate(today);
-        setEndDate(today);
-        fetchAttendanceList().then(() => setRefreshing(false));
-    }, [userId]);
+    // const onRefresh = useCallback(() => {
+    //     setRefreshing(true);
+    //     const today = new Date();
+    //     setStartDate(today);
+    //     setEndDate(today);
+    //     fetchAttendanceList().then(() => setRefreshing(false));
+    // }, [userId]);
 
     // Apply date filter
     const applyDateFilter = () => {
@@ -204,178 +204,84 @@ const AttendanceList = ({ navigation }) => {
     //     fetchAttendanceList(userId);
     // }, [userId]);
 
-    const renderAttendanceItem = ({ item }) => (
-        <View
-            style={{
-                backgroundColor: '#fff',
-                padding: 12,
-                borderRadius: 10,
-                marginBottom: 15,
-                borderWidth: 1,
-                borderColor: '#eee',
-                shadowColor: '#000',
-                shadowOpacity: 0.1,
-                shadowRadius: 3,
-                elevation: 2,
-            }}
-        >
-            {/* Staff Info with Image */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-                {item.dates?.length > 0 && item.dates[item.dates.length - 1].image ? (
-                    <TouchableOpacity
-                        onPress={() => {
-                            setSelectedImage({ uri: item.dates[item.dates.length - 1].image });
-                            setModalVisible(true);
-                        }}
-                    >
-                        <Image
-                            source={{ uri: item.dates[item.dates.length - 1].image }}
-                            style={{
-                                width: 50,
-                                height: 50,
-                                borderRadius: 25,
-                                marginRight: 10,
-                                // ✅ 90 degree rotate karo agar ulti dikh rahi hai
-
-                            }}
-                        />
-                    </TouchableOpacity>
-
-                ) : (
+    const renderAttendanceItem = ({ item }) => {
+        return (
+            <>
+                {item.dates?.map((dateItem, i) => (
                     <View
+                        key={i}
                         style={{
-                            width: 50,
-                            height: 50,
-                            borderRadius: 25,
-                            backgroundColor: '#173161',
-                            marginRight: 10,
-                            justifyContent: 'center',
-                            alignItems: 'center',
+                            flexDirection: 'row',
+                            borderWidth: 1,
+                            borderTopWidth: 0,
+                            borderColor: '#ddd',
+                            backgroundColor: '#fff',
                         }}
                     >
-                        <Text style={{ color: '#fff', fontSize: 16, fontFamily: 'Inter-Bold' }}>
-                            {item.staffname ? item.staffname.charAt(0).toUpperCase() : 'U'}
-                        </Text>
+                        {/* Date */}
+                        <View style={{ width: 120, borderRightWidth: 1, borderColor: '#ddd', padding: 8 }}>
+                            <Text style={{ textAlign: 'center', fontSize: 12 }}>
+                                {formatDatefordisplay(item.date)}
+                            </Text>
+                        </View>
+
+                        {/* Punch In Time */}
+                        <View style={{ width: 120, borderRightWidth: 1, borderColor: '#ddd', padding: 8 }}>
+                            <Text style={{ textAlign: 'center', fontSize: 12 }}>
+                                {dateItem.checkin}
+                            </Text>
+                        </View>
+
+                        {/* Punch In Image */}
+                        <TouchableOpacity
+                            style={{ width: 120, borderRightWidth: 1, borderColor: '#ddd', padding: 8, alignItems: 'center' }}
+                            onPress={() => dateItem.image && (setSelectedImage({ uri: dateItem.image }), setModalVisible(true))}
+                        >
+                            <Image
+                                source={dateItem.image ? { uri: dateItem.image } : require('../../assets/default.png')}
+                                style={{ width: 40, height: 40, borderRadius: 20 }}
+                            />
+                        </TouchableOpacity>
+
+                        {/* Punch Out Time */}
+                        <View style={{ width: 120, borderRightWidth: 1, borderColor: '#ddd', padding: 8 }}>
+                            <Text style={{ textAlign: 'center', fontSize: 12 }}>
+                                {dateItem.checkout === '00:00:00' ? 'Not Checked Out' : dateItem.checkout}
+                            </Text>
+                        </View>
+
+                        {/* Punch Out Image */}
+                        <TouchableOpacity
+                            style={{ width: 120, borderRightWidth: 1, borderColor: '#ddd', padding: 8, alignItems: 'center' }}
+                            onPress={() => dateItem.image_punchout && (setSelectedImage({ uri: dateItem.image_punchout }), setModalVisible(true))}
+                        >
+                            <Image
+                                source={dateItem.image_punchout ? { uri: dateItem.image_punchout } : require('../../assets/default.png')}
+                                style={{ width: 40, height: 40, borderRadius: 20 }}
+                            />
+                        </TouchableOpacity>
+
+                        {/* Status */}
+                        <View style={{ width: 120, padding: 8 }}>
+                            <Text
+                                style={{
+                                    textAlign: 'center',
+                                    fontSize: 12,
+                                    color: dateItem.status === 'Present' ? 'green' : 'red',
+                                }}
+                            >
+                                {dateItem.status}
+                            </Text>
+                        </View>
                     </View>
-                )}
-                <View style={{ flex: 1 }}>
-                    <Text style={{ fontFamily: 'Inter-Bold', color: '#333', fontSize: 16 }}>
-                        {item.staffname || 'Unknown Staff'}
-                    </Text>
-                    <Text style={{ fontFamily: 'Inter-Regular', color: '#666', fontSize: 12 }}>
-                        {item.dates?.length || 0} Records Found
-                    </Text>
-                </View>
-            </View>
+                ))}
+            </>
+        );
+    };
 
-            {/* Date Header */}
-            <View style={{
-                backgroundColor: '#173161',
-                padding: 8,
-                borderRadius: 6,
-                marginBottom: 10,
-            }}>
-                <Text style={{
-                    fontFamily: 'Inter-Bold',
-                    color: '#fff',
-                    fontSize: 14,
-                    textAlign: 'center'
-                }}>
-                    Date: {formatDatefordisplay(item.date)}
-                </Text>
-            </View>
 
-            {/* Table Header */}
-            <View style={{
-                flexDirection: 'row',
-                backgroundColor: '#f0f0f0',
-                padding: 8,
-                borderTopLeftRadius: 6,
-                borderTopRightRadius: 6,
-                marginBottom: 2
-            }}>
-                <Text style={{ flex: 1, fontFamily: 'Inter-Bold', color: '#333', fontSize: 12, textAlign: 'center' }}>
-                    Check-in
-                </Text>
-                <Text style={{ flex: 1, fontFamily: 'Inter-Bold', color: '#333', fontSize: 12, textAlign: 'center' }}>
-                    Check-out
-                </Text>
-                <Text style={{ flex: 1, fontFamily: 'Inter-Bold', color: '#333', fontSize: 12, textAlign: 'center' }}>
-                    Status
-                </Text>
-            </View>
 
-            {/* Attendance Records in Table Format */}
-            {item.dates && item.dates.map((dateItem, index) => (
-                <View
-                    key={index}
-                    style={{
-                        flexDirection: 'row',
-                        backgroundColor: index % 2 === 0 ? '#f8f9fa' : '#ffffff',
-                        padding: 10,
-                        borderBottomWidth: index === item.dates.length - 1 ? 0 : 1,
-                        borderBottomColor: '#eee',
-                        borderBottomLeftRadius: index === item.dates.length - 1 ? 6 : 0,
-                        borderBottomRightRadius: index === item.dates.length - 1 ? 6 : 0,
-                    }}
-                >
-                    {/* Check-in Time */}
-                    <Text style={{
-                        flex: 1,
-                        fontFamily: 'Inter-Regular',
-                        color: '#000',
-                        fontSize: 12,
-                        textAlign: 'center'
-                    }}>
-                        {dateItem.checkin}
-                    </Text>
 
-                    {/* Check-out Time */}
-                    <Text style={{
-                        flex: 1,
-                        fontFamily: 'Inter-Regular',
-                        color: '#000',
-                        fontSize: 12,
-                        textAlign: 'center'
-                    }}>
-                        {dateItem.checkout === '00:00:00' ? 'Not Checked Out' : dateItem.checkout}
-                    </Text>
-
-                    {/* Status */}
-                    <Text
-                        style={{
-                            flex: 1,
-                            fontFamily: 'Inter-Regular',
-                            color: dateItem.status === 'Present' ? 'green' : 'red',
-                            fontSize: 12,
-                            textAlign: 'center',
-                        }}
-                    >
-                        {dateItem.status}
-                    </Text>
-                </View>
-            ))}
-
-            {/* Summary Footer */}
-            <View style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                marginTop: 10,
-                paddingTop: 8,
-                borderTopWidth: 1,
-                borderTopColor: '#eee'
-            }}>
-                <Text style={{ fontFamily: 'Inter-Regular', color: '#666', fontSize: 11 }}>
-                    First Check-in: {item.dates?.[0]?.checkin || 'N/A'}
-                </Text>
-                <Text style={{ fontFamily: 'Inter-Regular', color: '#666', fontSize: 11 }}>
-                    Last Activity: {item.dates?.[item.dates.length - 1]?.checkout === '00:00:00'
-                        ? item.dates[item.dates.length - 1]?.checkin
-                        : item.dates[item.dates.length - 1]?.checkout || 'N/A'}
-                </Text>
-            </View>
-        </View>
-    );
 
     return (
         <View style={{ flex: 1, backgroundColor: '#F4F6FA' }}>
@@ -487,36 +393,74 @@ const AttendanceList = ({ navigation }) => {
             {loading ? (
                 <ActivityIndicator size="large" color="#173161" style={{ marginTop: 30 }} />
             ) : (
-                <FlatList
-                    data={attendanceList}
-                    keyExtractor={(item, index) => index.toString()}
-                    renderItem={renderAttendanceItem}
-                    refreshControl={
-                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                    }
-                    ListEmptyComponent={
-                        <View style={{ alignItems: 'center', marginTop: 40 }}>
-                            <Image
-                                source={require('../../assets/attenance.png')}   // 🔹 apna image yaha rakho
-                                style={{ width: 100, height: 100, marginBottom: 15 }}
-                                resizeMode="contain"
-                            />
+                <ScrollView
+                    horizontal={true}
+                    showsHorizontalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                >
+                    <View style={{ paddingHorizontal: 15 }}>
 
-                            <Text
-                                style={{
-                                    textAlign: 'center',
-                                    color: 'gray',
-                                    fontSize: 14,
-                                    fontFamily: 'Inter-Regular',
-                                }}
-                            >
-                                No attendance records found for selected dates.
-                            </Text>
+                        {/* 🔥 HEADER */}
+                        <View
+                            style={{
+                                flexDirection: 'row',
+                                backgroundColor: '#f0f0f0',
+                                borderWidth: 1,
+                                borderColor: '#ccc',
+                            }}
+                        >
+                            {[
+                                'Date',
+                                'Punch In Time',
+                                'Punch In Image',
+                                'Punch Out Time',
+                                'Punch Out Image',
+                                'Status',
+                            ].map((title, i) => (
+                                <View
+                                    key={i}
+                                    style={{
+                                        width: 120,
+                                        paddingVertical: 8,
+                                        borderRightWidth: i === 5 ? 0 : 1,
+                                        borderColor: '#ccc',
+                                        alignItems: 'center',
+                                    }}
+                                >
+                                    <Text style={{ fontFamily: 'Inter-Bold', fontSize: 12, color: 'black' }}>
+                                        {title}
+                                    </Text>
+                                </View>
+                            ))}
                         </View>
-                    }
 
-                    contentContainerStyle={{ paddingHorizontal: 15, paddingBottom: 80 }}
-                />
+                        {/* 🔥 ROWS */}
+                        <FlatList
+                            data={attendanceList}
+                            keyExtractor={(item, index) => index.toString()}
+                            renderItem={renderAttendanceItem}
+                            contentContainerStyle={{ paddingBottom: 30 }}
+
+                            nestedScrollEnabled={true}
+                            // refreshControl={
+                            //     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                            // }
+                            ListEmptyComponent={
+                                <View style={{ alignItems: 'center', marginTop: 40 }}>
+                                    <Image
+                                        source={require('../../assets/attenance.png')}
+                                        style={{ width: 100, height: 100, marginBottom: 15 }}
+                                        resizeMode="contain"
+                                    />
+                                    <Text style={{ color: 'gray', fontSize: 14 }}>
+                                        No attendance records found.
+                                    </Text>
+                                </View>
+                            }
+                        />
+                    </View>
+                </ScrollView>
+
             )}
 
             {/* Add Attendance Button */}

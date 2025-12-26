@@ -1,4 +1,4 @@
-import { View, Text, FlatList, StatusBar, TouchableOpacity, Image, ActivityIndicator, Modal, Alert, Linking, Keyboard, ScrollView, TextInput, Animated, BackHandler, Dimensions } from 'react-native'
+import { View, Text, FlatList, StatusBar, TouchableOpacity, Image, ActivityIndicator, Modal, Alert, Linking, Keyboard, ScrollView, TextInput, Animated, BackHandler, Dimensions, ToastAndroid } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import Constant from '../Commoncomponent/Constant';
 import { useFocusEffect } from '@react-navigation/native';
@@ -29,23 +29,30 @@ const OrderDetails = ({ navigation, route }) => {
     const [selectedpaymentid, setSelectedpaymentid] = useState(null);
     const [selectedentry, setSelectedEntry] = useState(null);
     const [isupdatemode, setIsupdatemode] = useState(false);
+    const [deleteConfirmationVisible, setDeleteConfirmationVisible] = useState(false);
+    const [selectedPayment, setSelectedPayment] = useState(null);
 
-    const [remark, setRemark] = useState(null);
+
+
     const [loading, setLoading] = useState(false);
     const [customerId, setCustomerId] = useState(null);
     const [paymentlist, setPaymentlist] = useState([]);
 
-    const [paidamt, setPaidamt] = useState(null);
+
     const [amount, setAmount] = useState(null);
     const [QRErrors, setQRErrors] = useState({});
     const [paymentmethodopen, setPaymentMethodOpen] = useState(false); // Controls dropdown visibility
     const [paymentmethodvalue, setPaymentMethodValue] = useState(); // Selected payment method
     const [paymentmethoditems, setPaymentMethodItems] = useState([
         { label: 'Cash', value: 'Cash' },
-        { label: 'Bank Transfer', value: 'Bank Transfer' },
-        { label: 'Baki', value: 'Baki' },
-        { label: "UPI", value: "UPI" },
+        { label: 'Loan', value: 'Loan' },
+        { label: 'Cheque', value: 'Cheque' },
+        { label: "NEFT/RTCG", value: "NEFT/RTCG" },
     ]);
+
+    const [paidamt, setPaidamt] = useState('');
+    const [remark, setRemark] = useState('');
+
 
     const [isExpanded, setIsExpanded] = useState(false);
     const [paydueamt, setPaydueamt] = useState({});
@@ -88,13 +95,13 @@ const OrderDetails = ({ navigation, route }) => {
     const [totalpaybleamount, setTotalpaybleamount] = useState(null);
     const [orderstatusfetch, setOrderStatusfetch] = useState(null);
 
+
     const [deleteOrderModalVisible, setDeleteOrderModalVisible] = useState(false);
 
-
     const [errors, setErrors] = useState({
+        paymentmethod: '',
         paidamt: '',
-        method: '',
-        status: '',
+        remark: ''
     });
 
     const showRate = !permissions?.["Order Price"]?.["Show Rate"];
@@ -144,47 +151,7 @@ const OrderDetails = ({ navigation, route }) => {
 
     const columns = getDynamicColumns();
 
-    const validateFields = () => {
-        const grandTotal = totalpaybleamount ? totalpaybleamount : calculateGrandTotal();
-        const newErrors = {};
 
-        const paymentItem = paymentlist && paymentlist.length > 0 ? paymentlist[0] : null;
-
-        // Prevent 0 amount when payment method is Cash or Bank Transfer
-        if (paymentmethodvalue == 'Cash' || paymentmethodvalue == 'Bank Transfer') {
-            if (!paidamt || parseFloat(paidamt) <= 0) {
-                newErrors.paidamt = 'Payment amount must be greater than 0';
-            } else if (paymentItem && paymentItem.deu_amount) {
-                newErrors.paidamt = paidamt > paymentItem.deu_amount ? 'Due amount is less than the entered amount' : '';
-            } else {
-                newErrors.paidamt = grandTotal < paidamt ? 'Due amount is less than the entered amount' : '';
-            }
-        }
-
-        if (paymentmethodvalue == 'UPI') {
-            if (!paidamt || parseFloat(paidamt) <= 0) {
-                newErrors.paidamt = 'Payment amount must be greater than 0';
-            } else {
-                const selectedUpi = upilist.find((item) => item.upi_id == selectedupiid);
-                if (selectedUpi) {
-                    const limit = parseFloat(selectedUpi.upi_limit);
-                    if (parseFloat(paidamt) > limit) {
-                        newErrors.paidamt = `Amount exceeds UPI limit of ₹${limit}`;
-                    }
-                } else {
-                    newErrors.paidamt = 'Please select a UPI ID';
-                }
-            }
-        }
-
-        // Validate other fields
-        newErrors.method = paymentmethodvalue ? '' : 'Payment method is required';
-        newErrors.status = statusvalue ? '' : 'Order Status is required';
-
-        setErrors(newErrors);
-
-        return Object.values(newErrors).every((error) => error == '');
-    };
 
     useFocusEffect(
         React.useCallback(() => {
@@ -210,31 +177,7 @@ const OrderDetails = ({ navigation, route }) => {
         }, [order_no, navigation])
     );
 
-    useEffect(() => {
-        if (paymentmethodvalue == 'Baki') {
-            setPaidamt('0'); // Set amount to 0 when 'Baki' is selected
-        }
-    }, [paymentmethodvalue]);
 
-    // const listupi = async () => {
-    //     const url = `${Constant.URL}${Constant.OtherURL.list_upi}`;
-    //     const response = await fetch(url, {
-    //         method: 'POST',
-    //         headers: {
-    //             'Content-Type': 'application/json',
-    //         },
-    //         body: JSON.stringify({
-
-    //         }),
-    //     });
-    //     const result = await response.json();
-    //     if (result.code == "200") {
-    //         setUpiList(result.payload);
-    //     } else {
-    //         setUpiList([]);
-    //         console.log('error while listing upi');
-    //     }
-    // };
 
     const [expandedIndex, setExpandedIndex] = useState(null);
     const animations = useRef({}).current; // Store animated values for each index
@@ -268,51 +211,7 @@ const OrderDetails = ({ navigation, route }) => {
         }
     };
 
-    // const listPermissions = async () => {
-    //     const id = await AsyncStorage.getItem('admin_id');
 
-    //     const url = `${Constant.URL}${Constant.OtherURL.permision_list}`;
-    //     const response = await fetch(url, {
-    //         method: 'POST',
-    //         headers: { 'Content-Type': 'application/json' },
-    //         body: JSON.stringify({ user_id: id }),
-    //     });
-    //     const result = await response.json();
-    //     if (result.code == "200") {
-    //         if (result.status == "deactive") {
-    //             Alert.alert("Access Denied", "Your account has been deactivated.");
-    //             await AsyncStorage.clear(); // Clear stored user data
-    //             navigation.reset({
-    //                 index: 0,
-    //                 routes: [{ name: "LoginUser" }]
-    //             }); // Redirect to login
-    //         }
-    //         setPermissionsList(result.payload);
-    //         // Prepare permissions state
-    //         let permissionsData = {};
-    //         result.payload.forEach((item) => {
-    //             const permsArray = item.menu_permission.split(',');
-    //             let permsObject = {};
-    //             permsArray.forEach((perm) => {
-    //                 permsObject[perm] = true;
-    //             });
-    //             permissionsData[item.menu_name] = permsObject;
-    //         });
-
-    //         setPermissions(permissionsData);
-    //     } else {
-    //         console.log('Error fetching permissions');
-    //     }
-    // };
-
-    // useFocusEffect(
-    //     React.useCallback(() => {
-
-    //         fetchusertype();
-    //         // listupi();
-    //         listpayments();
-    //     }, [])
-    // );
 
     const hasCategoryPermissions = permissions['Orders'] || {};
     const hasPermissions = permissions['Customers'] || {};
@@ -367,89 +266,43 @@ const OrderDetails = ({ navigation, route }) => {
         setLoading(false);
     };
 
-    // const fetcholdduepayments = async () => {
-    //     setLoading(true);
-    //     const url = `${Constant.URL}${Constant.OtherURL.old_due_payment}`;
-    //     const response = await fetch(url, {
-    //         method: 'POST',
-    //         headers: { 'Content-Type': 'application/json' },
-    //         body: JSON.stringify({ customer_id: customerId, order_no: order_no }),
-    //     });
-    //     const result = await response.json();
-    //     if (result.code == "200") {
-    //         setDuepaymentlist(result.payload)
-    //     } else {
-    //         setDuepaymentlist([]);
-    //         console.log('Error fetching old payment list');
-    //     }
-    //     setLoading(false);
-    // };
+
 
     const [oldpayerrors, setOldpayErrors] = useState({});
 
-    const validatePayment = (order_no, dueAmount) => {
+    const validatePaymentFields = () => {
         let valid = true;
-        let newErrors = {};
+        const newErrors = { paymentmethod: '', paidamt: '', remark: '' };
 
-        if (!paydueamtmethodvalue[order_no]) {
-            newErrors.method = "Please select a payment method.";
+        if (!paymentmethodvalue) {
+            newErrors.paymentmethod = 'Payment method is required';
             valid = false;
         }
 
-        if (!paydueamt[order_no] || isNaN(paydueamt[order_no]) || parseFloat(paydueamt[order_no]) <= 0) {
-            newErrors.paydueamt = "Enter a valid amount.";
-            valid = false;
-        } else if (parseFloat(paydueamt[order_no]) > dueAmount) {
-            newErrors.paydueamt = "Amount cannot exceed due amount.";
+        if (!paidamt || parseFloat(paidamt) <= 0) {
+            newErrors.paidamt = 'Payment amount must be greater than 0';
             valid = false;
         }
 
-        setOldpayErrors(prev => ({ ...prev, [order_no]: newErrors }));
+        // if (!remark || remark.trim() === '') {
+        //     newErrors.remark = 'Remark is required';
+        //     valid = false;
+        // }
+
+        setErrors(newErrors);
         return valid;
     };
 
-    const addoldpayment = async (order_no, dueAmount) => {
-        if (!validatePayment(order_no, dueAmount)) {
-            return;
-        }
-        setMainloading(true);
-        const id = await AsyncStorage.getItem('admin_id');
-        const paymentMethodLabel = paydueamtmethoditems?.find(item => item.value == paydueamtmethodvalue[order_no])?.label || '';
+    const handleSavePayment = async () => {
+        if (!validatePaymentFields()) return; // Stop if validation fails
 
-        const url = `${Constant.URL}${Constant.OtherURL.payment}`;
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                c_id: customerId,
-                user_id: id,
-                order_no: order_no,
-                payment_amount: paydueamt[order_no],
-                payment_mode: paymentMethodLabel,
-                remark: '',
-                status: 'Delivered',
-            }),
-        });
-        const result = await response.json();
-        if (result.code == "200") {
-            setPaydueamt((prev) => ({ ...prev, [order_no]: '' }));
-            setPaydueamtMethodValue((prev) => ({ ...prev, [order_no]: null }));
-            // fetcholdduepayments();
-            fetchorderdetails();
-        } else {
-            //   setOrderDetails([]);
-            console.log('error while adding old payment');
-        }
-        setMainloading(false);
+        // Proceed with your addpayment logic
+        await addpayment();
     };
 
-    // useFocusEffect(
-    //     React.useCallback(() => {
-    //         fetcholdduepayments();
-    //     }, [customerId])
-    // );
+
+
+
 
     const fetchorderdetails = async () => {
         setMainloading(true);
@@ -466,7 +319,7 @@ const OrderDetails = ({ navigation, route }) => {
         const result = await response.json();
         if (result.code == "200") {
             setOrderDetails(result.payload);
-            setRemark(result.remark);
+
             setPaid(result.payment_amount);
             setDue(result.due_amount);
             setTotalamt(result.total_price);
@@ -491,46 +344,7 @@ const OrderDetails = ({ navigation, route }) => {
         setMainloading(false);
     };
 
-    // const filterPaymentMethods = async (paymentOptions) => {
-    //     const id = await AsyncStorage.getItem('admin_id');
 
-    //     const url = `${Constant.URL}${Constant.OtherURL.permision_list}`;
-    //     const response = await fetch(url, {
-    //         method: 'POST',
-    //         headers: { 'Content-Type': 'application/json' },
-    //         body: JSON.stringify({ user_id: id }),
-    //     });
-    //     const result = await response.json();
-
-    //     if (result.code == "200") {
-    //         const permissionsList = result.payload;
-
-    //         // Find payment type permissions
-    //         const paymentTypePermission = permissionsList.find(item => item.menu_name == "Payment Type");
-    //         let allowedPayments = paymentTypePermission ? paymentTypePermission.menu_permission.split(',').map(p => p.trim().toLowerCase()) : [];
-    //         console.log("abc", allowedPayments);
-
-
-    //         // If UPI is in the list but no UPI ID is available, remove it from allowedPayments
-    //         const hasUpiPermission = allowedPayments.includes("Upi");
-    //         console.log(hasUpiPermission);
-    //         console.log(upilist);
-    //         if (hasUpiPermission && (!upilist || upilist.length == 0)) {
-    //             allowedPayments = allowedPayments.filter(p => p != "Upi");
-    //         }
-
-    //         // Filter payment options based on allowed permissions
-    //         const filteredPaymentOptions = paymentOptions.filter(option => allowedPayments.includes(option.value.toLowerCase()));
-    //         console.log(filteredPaymentOptions);
-
-    //         setPaymentMethodItems(filteredPaymentOptions);
-    //         const paydueamtFiltered = filteredPaymentOptions.filter(option => option.value != "Baki");
-    //         setPaydueamtMethodItems(paydueamtFiltered);
-    //         setTransportpayItems(paydueamtFiltered);
-    //     } else {
-    //         console.log('Error fetching permissions for filtering payment options');
-    //     }
-    // };
     useFocusEffect(
         React.useCallback(() => {
             fetchorderdetails();
@@ -589,24 +403,43 @@ const OrderDetails = ({ navigation, route }) => {
         setMainloading(false);
     };
 
-    // const confirmDelete = () => {
-    //     Alert.alert(
-    //         "Delete Order",
-    //         `Are you sure you want to delete this order?`,
-    //         [
-    //             {
-    //                 text: "Cancel",
-    //                 style: "cancel"
-    //             },
-    //             {
-    //                 text: "Yes",
-    //                 onPress: () => handleDelete()
-    //             }
-    //         ]
-    //     );
-    // };
+
     const confirmDelete = () => {
         setDeleteOrderModalVisible(true);
+    };
+
+
+
+
+    const handleDeletePayment = async (paymentId) => {
+        try {
+            const response = await fetch(
+                `${Constant.URL}${Constant.OtherURL.delete_payment}`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ payment_id: paymentId }),
+                }
+            );
+
+            const data = await response.json();
+
+            // ✅ SUCCESS CONDITION (CODE 200)
+            if (data.code == 200) {
+                ToastAndroid.show('Payment deleted successfully', ToastAndroid.SHORT);
+
+                // 🔥 FAST REFRESH
+                listpayments();
+                fetchorderdetails();
+            } else {
+
+            }
+        } catch (error) {
+            console.log('Delete Payment Error:', error);
+
+        }
     };
 
 
@@ -647,58 +480,65 @@ const OrderDetails = ({ navigation, route }) => {
         setPaymentModal(true);
     };
 
-    // const handleEditpayment = () => {
-    //     if (selectedentry) {
-    //         setPaymentMethodValue(selectedentry.payment_mode); // Now store the payment mode
-    //         setPaidamt(selectedentry.paid_amount);
-    //         setIsupdatemode(true);
-    //     }
-    //     setPaymentModal(false); // Close modal
-    // };
+    const addpayment = async () => {
+        if (!paymentmethodvalue) {
+            console.log('Error: Payment method is required');
+            return;
+        }
 
-    // const addpayment = async () => {
-    //     if (!validateFields()) return;
-    //     setMainloading(true);
-    //     const id = await AsyncStorage.getItem('admin_id');
-    //     const paymentMethodLabel = paymentmethoditems.find(item => item.value == paymentmethodvalue)?.label || '';
+        if (!paidamt || parseFloat(paidamt) <= 0) {
+            console.log('Error: Payment amount must be greater than 0');
+            return;
+        }
 
-    //     // Find label for selected status
-    //     const statusLabel = statusitems.find(item => item.value == statusvalue)?.label || '';
-    //     const url = `${Constant.URL}${Constant.OtherURL.payment}`;
-    //     const response = await fetch(url, {
-    //         method: 'POST',
-    //         headers: {
-    //             'Content-Type': 'application/json',
-    //         },
-    //         body: JSON.stringify({
-    //             c_id: customerId,
-    //             user_id: id,
-    //             order_no: order_no,
-    //             payment_amount: paidamt,
-    //             payment_mode: paymentMethodLabel,
-    //             remark: '',
-    //             status: statusLabel,
-    //             upi_id: selectedupiid,
-    //             redeem_commission: redeemamt
-    //         }),
-    //     });
-    //     const result = await response.json();
-    //     if (result.code == "200") {
-    //         setPaidamt(null);
-    //         setAmount(null);
-    //         setRedeemamt(null);
-    //         setPaymentMethodValue(null);
-    //         setSelectedUpiId(null);
-    //         setUpilink(null);
-    //         listpayments();
-    //         fetchorderdetails();
-    //         // listupi();
-    //     } else {
-    //         //   setOrderDetails([]);
-    //         console.log('error while listing product');
-    //     }
-    //     setMainloading(false);
-    // };
+        setMainloading(true);
+
+        try {
+            const id = await AsyncStorage.getItem('admin_id');
+            console.log("id ye hai", id);
+            const paymentMethodLabel = paymentmethoditems.find(item => item.value == paymentmethodvalue)?.label || '';
+            const currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+
+            const payload = {
+                c_id: customerId,
+                user_id: id,
+                order_no: order_no,
+                payment_amount: paidamt,
+                payment_mode: paymentMethodLabel, // example: 'cash'
+                payment_date: currentDate,
+                remark: remark || ''
+            };
+
+            console.log('Request Payload:', payload);
+
+            const url = `${Constant.URL}${Constant.OtherURL.add_payment}`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+            console.log('Response:', result);
+
+            if (result.code == "200") {
+                console.log('Payment added successfully');
+                setPaidamt('');
+                setPaymentMethodValue(null);
+                setRemark('');
+                await listpayments();
+                fetchorderdetails();
+            } else {
+                console.log('Error adding payment:', result.message || 'Unknown error');
+            }
+
+        } catch (error) {
+            console.log('Fetch error:', error);
+        } finally {
+            setMainloading(false);
+        }
+    };
+
 
     // const updatepayment = async () => {
     //     setMainloading(true);
@@ -738,26 +578,33 @@ const OrderDetails = ({ navigation, route }) => {
     //     setMainloading(false);
     // };
 
-    // const listpayments = async () => {
-    //     const url = `${Constant.URL}${Constant.OtherURL.payment_list}`;
-    //     const response = await fetch(url, {
-    //         method: 'POST',
-    //         headers: {
-    //             'Content-Type': 'application/json',
-    //         },
-    //         body: JSON.stringify({
-    //             order_no: order_no,
-    //         }),
-    //     });
-    //     const result = await response.json();
-    //     if (result.code == "200") {
-    //         setPaymentlist(result.payload);
+    const listpayments = async () => {
+        const url = `${Constant.URL}${Constant.OtherURL.payment_list}`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                order_no: order_no,
+            }),
+        });
+        const result = await response.json();
+        if (result.code == "200") {
+            setPaymentlist(result.payload);
 
-    //     } else {
-    //         setPaymentlist([]);
-    //         console.log('error while listing payment');
-    //     }
-    // };
+        } else {
+            setPaymentlist([]);
+            console.log('error while listing payment');
+        }
+    };
+
+    // 🔹 First time screen focus hone par payment list load
+    useFocusEffect(
+        React.useCallback(() => {
+            listpayments();
+        }, [order_no])
+    );
 
     if (mainloading) {
         return (
@@ -766,6 +613,89 @@ const OrderDetails = ({ navigation, route }) => {
             </View>
         );
     }
+
+    const handleEditPayment = (payment) => {
+        console.log("payment ye hai", payment);
+        setPaymentModal(false);
+
+        // pura object store (agar kahin aur kaam aaye)
+        setSelectedPayment(payment);
+
+        // 🔹 Dropdown (null safe)
+        setPaymentMethodValue(payment.payment_mode ? payment.payment_mode : null);
+
+        // 🔹 Amount fill
+        setPaidamt(payment.paid_amount ? String(payment.paid_amount) : '');
+
+        // 🔹 Remark fill
+        setRemark(payment.remark ? payment.remark : '');
+
+        // 🔹 Update mode ON
+        setIsupdatemode(true);
+
+        // 🔹 Selected payment id
+        setSelectedpaymentid(payment.payment_id);
+
+        // 🔹 Errors clear (optional but recommended)
+        setErrors({});
+    };
+
+
+    const updatepayment = async () => {
+        if (!validatePaymentFields()) return;
+
+        setLoading(true);
+        try {
+            const user_id = await AsyncStorage.getItem('admin_id');
+
+            const paymentMethodLabel =
+                paymentmethoditems.find(item => item.value == paymentmethodvalue)?.label
+                || paymentmethodvalue;
+
+            const response = await fetch(
+                `${Constant.URL}${Constant.OtherURL.update_payment}`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        payment_id: selectedpaymentid,
+                        c_id: customerId,
+                        user_id: user_id,
+                        order_no: order_no,
+                        payment_amount: Number(paidamt),
+                        payment_mode: paymentMethodLabel,
+                        payment_date: new Date().toISOString().split('T')[0],
+                        remark: remark,
+                    }),
+                }
+            );
+
+            const result = await response.json();
+
+            if (result.code == 200 || result.status === "True") {
+                // 🔹 Reset form
+                setPaidamt('');
+                setPaymentMethodValue(null);
+                setRemark('');
+                setIsupdatemode(false);
+                setSelectedpaymentid(null);
+
+                // 🔹 Refresh
+                listpayments();
+                fetchorderdetails();
+
+                ToastAndroid.show('Payment updated successfully!', ToastAndroid.SHORT);
+            } else {
+                console.log('Error updating payment!');
+            }
+        } catch (error) {
+            console.log('Update Payment Error:', error);
+
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <View style={{ flex: 1 }}>
             <View>
@@ -1016,195 +946,139 @@ const OrderDetails = ({ navigation, route }) => {
                         </View>
                     </ScrollView>
 
-                    {/* {transport_amt ? (
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#fff', paddingHorizontal: 10 }}>
-                            <View style={{ width: '70%', borderRightWidth: 0.5, borderColor: '#ccc', }}>
-                                <Text style={{ color: '#000', fontSize: 14, paddingTop: 5, fontFamily: 'Inter-Bold', textAlign: 'left' }}>
-                                    Transport Charge:
-                                    <Text style={{ color: '#000', fontSize: 14, fontFamily: 'Inter-Regular', textTransform: 'capitalize' }}>
-                                        {` ${transport_amt}`}
+
+
+
+                    <View style={{ backgroundColor: '#fff', borderRadius: 10, margin: 10, padding: 10 }}>
+
+                        {/* Payment Method */}
+                        <Text style={{ marginBottom: 5, color: 'gray' }}>Payment Method <Text style={{ color: 'red', fontFamily: 'Inter-Regular' }}>*</Text></Text>
+                        <DropDownPicker
+                            placeholder='Select Payment'
+                            open={paymentmethodopen}
+                            value={paymentmethodvalue}
+                            items={paymentmethoditems}
+                            setOpen={setPaymentMethodOpen}
+                            setValue={(callback) => {
+                                const newValue = typeof callback === 'function' ? callback(paymentmethodvalue) : callback;
+                                setPaymentMethodValue(newValue);
+
+                                // Fast error clear
+                                setErrors(prev => ({ ...prev, paymentmethod: '' }));
+                            }}
+                            setItems={setPaymentMethodItems}
+                            style={{ borderRadius: 10, borderColor: errors.paymentmethod ? 'red' : 'gray', marginBottom: 5 }}
+                            dropDownContainerStyle={{ borderColor: '#DDD', backgroundColor: '#FFF' }}
+                        />
+
+
+                        {errors.paymentmethod ? <Text style={{ color: 'red', fontSize: 12, marginBottom: 5 }}>{errors.paymentmethod}</Text> : null}
+
+                        {/* Payment Amount */}
+                        <Text style={{ marginBottom: 5, color: 'gray' }}>Payment Amount <Text style={{ color: 'red', fontFamily: 'Inter-Regular' }}>*</Text></Text>
+                        <TextInput
+                            keyboardType='numeric'
+                            value={paidamt}
+                            placeholderTextColor='#ccc'
+                            placeholder='Enter Amount'
+                            onChangeText={(text) => {
+                                setPaidamt(text);
+
+                                // Fast error clear
+                                setErrors(prev => ({ ...prev, paidamt: '' }));
+                            }}
+                            style={{
+                                borderWidth: 1,
+                                borderColor: errors.paidamt ? 'red' : 'gray',
+                                borderRadius: 10,
+                                padding: 10,
+                                marginBottom: 5,
+                                color: 'black', fontFamily: 'Inter-Regular'
+                            }}
+                        />
+                        {errors.paidamt ? <Text style={{ color: 'red', fontSize: 12, marginBottom: 5 }}>{errors.paidamt}</Text> : null}
+
+                        {/* Remark */}
+                        <Text style={{ marginBottom: 5, color: 'gray' }}>Remark</Text>
+                        <TextInput
+                            value={remark}
+                            onChangeText={(text) => setRemark(text)}
+                            placeholder='Enter Remark'
+                            placeholderTextColor='#ccc'
+                            style={{
+                                borderWidth: 1,
+                                borderColor: 'gray', // remark ke liye error color nahi
+                                borderRadius: 10,
+                                padding: 10,
+                                marginBottom: 10,
+                                color: 'black', fontFamily: 'Inter-Regular'
+                            }}
+                        />
+
+                        {/* {errors.remark ? <Text style={{ color: 'red', fontSize: 12, marginBottom: 5 }}>{errors.remark}</Text> : null} */}
+
+                        {/* Save Button */}
+                        <TouchableOpacity
+                            onPress={isupdatemode ? updatepayment : handleSavePayment}
+                            style={{
+                                backgroundColor: '#173161',
+                                borderRadius: 10,
+                                paddingVertical: isupdatemode ? 16 : 12, // 🔥 update me bada
+                                alignItems: 'center',
+                                marginTop: 5
+                            }}
+                        >
+                            <Text
+                                style={{
+                                    color: '#fff',
+                                    fontSize: isupdatemode ? 16 : 14,
+                                    fontFamily: 'Inter-SemiBold'
+                                }}
+                            >
+                                {isupdatemode ? 'Update Payment' : 'Save'}
+                            </Text>
+                        </TouchableOpacity>
+
+                    </View>
+
+
+
+                    <>
+                        {paymentlist && paymentlist.length > 0 ? (
+                            paymentlist.map((item, index) => (
+                                <View key={index} style={{ zIndex: -10, backgroundColor: '#F8F8F8', borderRadius: 10, marginHorizontal: 10, marginVertical: 5, paddingVertical: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 3.84, elevation: 5, paddingHorizontal: 10 }}>
+                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                        <Text style={{ color: '#173161', fontFamily: 'Inter-Medium', fontSize: 12 }}>Paid Amount:
+                                            <Text style={{ color: '#173161', fontFamily: 'Inter-Regular', fontSize: 12 }}> {item.paid_amount}</Text>
+                                        </Text>
+
+
+                                        <TouchableOpacity
+                                            style={{ justifyContent: 'center', }}
+                                            onPress={(e) => {
+                                                const { pageX, pageY } = e.nativeEvent;
+                                                openpaymentModal(item, pageX, pageY);
+                                            }}
+                                        >
+                                            <Image source={require('../../assets/threedot.png')} style={{ height: 15, width: 15, tintColor: '#000' }} />
+                                        </TouchableOpacity>
+                                    </View>
+                                    <Text style={{ color: '#173161', fontFamily: 'Inter-Medium', fontSize: 12 }}>Due Amount:
+                                        <Text style={{ color: '#173161', fontFamily: 'Inter-Regular', fontSize: 12 }}> {item.deu_amount ? item.deu_amount : '0'}</Text>
                                     </Text>
-                                </Text>
-                                <Text style={{ color: '#000', fontSize: 14, paddingBottom: 5, fontFamily: 'Inter-Bold', textTransform: 'capitalize' }}>Payment Method:
-                                    <Text style={{ color: '#000', fontSize: 14, fontFamily: 'Inter-Regular', textTransform: 'capitalize' }}> {transportpaymode}</Text>
-                                </Text>
-                            </View>
-                            <Text style={{ color: '#000', fontSize: 14, marginBottom: 5, fontFamily: 'Inter-Bold', textAlign: 'right' }}>{trasportpaystatus}</Text>
-                            {trasportpaystatus == 'Unpaid' &&
-                                <TouchableOpacity onPress={() => setTransportmodal(true)}>
-                                    <Image source={require('../../assets/cash-payment.png')} style={{ height: 20, width: 20, tintColor: '#173161' }} />
-                                </TouchableOpacity>}
-                        </View>
-                    ) : null} */}
+                                    <Text style={{ color: '#173161', fontFamily: 'Inter-Medium', fontSize: 12 }}>Payment Method:
+                                        <Text style={{ color: '#173161', fontFamily: 'Inter-Regular', fontSize: 12 }}> {item.payment_mode}</Text>
+                                    </Text>
 
-                    {(usertype == 'Transporter' || usertype == 'Admin') && (due != 0 || isupdatemode) && (orderstatus == 'On The Way' || orderstatus == 'Delivered') &&
-                        <View style={{ backgroundColor: '#fff', borderRadius: 10, marginHorizontal: 10, marginVertical: 5, paddingVertical: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 3.84, elevation: 5, }}>
-                            <View style={{ marginBottom: 10, marginTop: 10, zIndex: paymentmethodopen ? 20 : 10 }}>
-                                <Text style={{ color: 'gray', fontFamily: 'Inter-Regular', fontSize: 12, marginHorizontal: 18, }}>Payment Method</Text>
-                                <DropDownPicker
-                                    placeholder='Select Payment'
-                                    open={paymentmethodopen}
-                                    value={paymentmethodvalue}
-                                    items={paymentmethoditems}
-                                    setOpen={(isOpen) => {
-                                        setPaymentMethodOpen(isOpen);
-                                        if (isOpen) {
-                                            Keyboard.dismiss();
-                                            setStatusOpen(false);
-                                        }
-                                    }}
-                                    setValue={setPaymentMethodValue}
-                                    onChangeValue={(value) => {
-                                        if (value == 'UPI') {
-                                            setUpiModalVisible(true);
-                                        }
-                                    }}
-
-                                    setItems={setPaymentMethodItems}
-                                    style={{
-                                        width: '92%',
-                                        height: 40,
-                                        borderRadius: 10,
-                                        borderColor: errors.method ? 'red' : 'gray',
-                                        backgroundColor: '#fff',
-                                        alignSelf: 'center'
-                                    }}
-                                    textStyle={{
-                                        fontFamily: 'Inter-Medium',
-                                        fontSize: 14,
-                                        color: '#000',
-                                    }}
-                                    placeholderStyle={{
-                                        fontFamily: 'Inter-Regular',
-                                        fontSize: 14,
-                                        color: 'gray',
-                                    }}
-                                    dropDownContainerStyle={{
-                                        borderColor: '#fff',
-                                        shadowColor: '#000',
-                                        shadowOffset: { width: 0, height: 1 },
-                                        shadowOpacity: 0.1,
-                                        shadowRadius: 3,
-                                        elevation: 2,
-                                        backgroundColor: '#fff',
-                                        maxHeight: 600
-                                    }}
-                                    dropDownDirection='BOTTOM'
-                                />
-                            </View>
-                            {errors.method ? <Text style={{ color: 'red', fontSize: 12, fontFamily: 'Inter-Regular', marginLeft: 15 }}>{errors.method}</Text> : null}
-                            {selectedupiid &&
-                                <View style={{ flexDirection: 'row' }}>
-                                    <Text style={{ color: '#000', fontFamily: 'Inter-Regular', fontSize: 12, marginLeft: 18, }}>{selectedupiid}</Text>
-                                    <Text onPress={() => setUpiModalVisible(true)} style={{ color: '#173161', fontFamily: 'Inter-Regular', fontSize: 12, }}>  Want to change ?</Text>
+                                    <Text style={{ color: '#173161', fontFamily: 'Inter-Medium', fontSize: 12 }}>Entry Date:
+                                        <Text style={{ color: '#173161', fontFamily: 'Inter-Regular', fontSize: 12 }}> {item.payment_date
+                                            ? new Date(item.payment_date).toLocaleDateString("en-GB")
+                                            : ""}</Text>
+                                    </Text>
                                 </View>
-                            }
+                            ))) : null}
+                    </>
 
-                            {(!isupdatemode || (isupdatemode && usertype == 'Admin')) && (
-
-                                <View style={{ marginTop: 10, marginHorizontal: 13, opacity: paymentmethodvalue == 'Baki' ? 0.5 : 1 }}>
-                                    <Text style={{ color: 'gray', fontFamily: 'Inter-Regular', fontSize: 12, marginHorizontal: 5, }}>Payment Amount</Text>
-                                    <TextInput editable={paymentmethodvalue != 'Baki'} keyboardType='numeric' value={paidamt} onChangeText={setPaidamt} onFocus={() => { setStatusOpen(false); setPaymentMethodOpen(false) }} style={{ width: '100%', fontFamily: 'Inter-Medium', fontSize: 14, paddingHorizontal: 10, color: paymentmethodvalue == 'Baki' ? 'gray' : '#000', borderWidth: 1, borderColor: errors.paidamt ? 'red' : 'gray', borderRadius: 11 }} />
-                                    {errors.paidamt ? <Text style={{ color: 'red', fontSize: 12, fontFamily: 'Inter-Regular' }}>{errors.paidamt}</Text> : null}
-                                </View>
-                            )}
-                            {!isupdatemode &&
-                                <>
-                                    <View style={{ marginBottom: 10, marginTop: 10, zIndex: statusopen ? 20 : 10 }}>
-                                        <Text style={{ color: 'gray', fontFamily: 'Inter-Regular', fontSize: 12, marginHorizontal: 18, }}>Order Status</Text>
-                                        <DropDownPicker
-                                            open={statusopen}
-                                            value={statusvalue}
-                                            items={statusitems}
-                                            setOpen={(isOpen) => {
-                                                setStatusOpen(isOpen);
-                                                if (isOpen) {
-                                                    Keyboard.dismiss();
-                                                    setPaymentMethodOpen(false);
-                                                }
-                                            }}
-                                            setValue={setStatusValue}
-                                            setItems={setStatusItems}
-                                            style={{
-                                                width: '92%',
-                                                height: 40,
-                                                borderRadius: 10,
-                                                borderColor: errors.status ? 'red' : 'gray',
-                                                backgroundColor: '#fff',
-                                                alignSelf: 'center'
-                                            }}
-                                            textStyle={{
-                                                fontFamily: 'Inter-Medium',
-                                                fontSize: 14,
-                                                color: '#000',
-                                            }}
-                                            placeholderStyle={{
-                                                fontFamily: 'Inter-Regular',
-                                                fontSize: 14,
-                                                color: 'gray',
-                                            }}
-                                            dropDownContainerStyle={{
-                                                borderColor: '#fff',
-                                                shadowColor: '#000',
-                                                shadowOffset: { width: 0, height: 1 },
-                                                shadowOpacity: 0.1,
-                                                shadowRadius: 3,
-                                                elevation: 2,
-                                                backgroundColor: '#fff',
-                                                maxHeight: 600
-                                            }}
-                                            dropDownDirection='BOTTOM'
-                                        />
-                                    </View>
-                                    {errors.status ? <Text style={{ color: 'red', fontSize: 12, fontFamily: 'Inter-Regular', marginLeft: 15 }}>{errors.status}</Text> : null}
-                                </>
-                            }
-
-                            <View style={{ alignItems: 'center', marginTop: 10 }}>
-                                <TouchableOpacity disabled={!paidamt || !paymentmethodvalue || !statusvalue} onPress={isupdatemode ? updatepayment : addpayment} style={{ backgroundColor: !paidamt || !paymentmethodvalue || !statusvalue ? '#C5C6D0' : '#007bff', borderRadius: 10, paddingVertical: 10, paddingHorizontal: 20, marginHorizontal: 10, width: '90%', alignItems: 'center' }} >
-                                    <Text style={{ color: !paidamt || !paymentmethodvalue || !statusvalue ? '#000' : '#fff', fontSize: 14, fontFamily: 'Inter-SemiBold' }}>Save</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                    }
-
-                    {usertype !== 'Salesman' && (
-                        <>
-                            {paymentlist && paymentlist.length > 0 ? (
-                                paymentlist.map((item, index) => (
-                                    <View key={index} style={{ zIndex: -10, backgroundColor: '#F8F8F8', borderRadius: 10, marginHorizontal: 10, marginVertical: 5, paddingVertical: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 3.84, elevation: 5, paddingHorizontal: 10 }}>
-                                        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                                            <Text style={{ color: '#173161', fontFamily: 'Inter-Medium', fontSize: 12 }}>Paid Amount:
-                                                <Text style={{ color: '#173161', fontFamily: 'Inter-Regular', fontSize: 12 }}> {item.paid_amount}</Text>
-                                            </Text>
-
-                                            {permissions["Payment Entry"] && (
-                                                <TouchableOpacity
-                                                    style={{ justifyContent: 'center', }}
-                                                    onPress={(e) => {
-                                                        const { pageX, pageY } = e.nativeEvent;
-                                                        openpaymentModal(item, pageX, pageY);
-                                                    }}
-                                                >
-                                                    <Image source={require('../../assets/threedot.png')} style={{ height: 15, width: 15, tintColor: '#000' }} />
-                                                </TouchableOpacity>)}
-                                        </View>
-                                        <Text style={{ color: '#173161', fontFamily: 'Inter-Medium', fontSize: 12 }}>Due Amount:
-                                            <Text style={{ color: '#173161', fontFamily: 'Inter-Regular', fontSize: 12 }}> {item.deu_amount ? item.deu_amount : '0'}</Text>
-                                        </Text>
-                                        <Text style={{ color: '#173161', fontFamily: 'Inter-Medium', fontSize: 12 }}>Payment Method:
-                                            <Text style={{ color: '#173161', fontFamily: 'Inter-Regular', fontSize: 12 }}> {item.payment_mode}</Text>
-                                        </Text>
-
-                                        <Text style={{ color: '#173161', fontFamily: 'Inter-Medium', fontSize: 12 }}>Entry Date:
-                                            <Text style={{ color: '#173161', fontFamily: 'Inter-Regular', fontSize: 12 }}> {item.payment_date
-                                                ? new Date(item.payment_date).toLocaleDateString("en-GB")
-                                                : ""}</Text>
-                                        </Text>
-                                    </View>
-                                ))) : null}
-                        </>
-                    )}
 
                     {duepaymentlist.length > 0 && <View style={{ borderWidth: 0.5, borderColor: '#D3D3D3', margin: 10 }}></View>}
                     {duepaymentlist && duepaymentlist.length > 0 && (
@@ -1374,9 +1248,10 @@ const OrderDetails = ({ navigation, route }) => {
             </Modal>
 
             <Modal visible={paymentmodal} transparent={true} animationType="slide">
-                <TouchableOpacity onPress={() => { setPaymentModal(false); }} style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
-                    {/* <View onStartShouldSetResponder={(e) => e.stopPropagation()} style={{ width: '50%', gap: 10, backgroundColor: '#fff', paddingHorizontal: 20, paddingBottom: 20, paddingTop: 10, borderRadius: 10 }}> */}
-                    {/* <Text style={{ fontSize: 16, fontFamily: 'Inter-Medium', color: '#173161' }}>{selectedCategory.name}:</Text> */}
+                <TouchableOpacity
+                    onPress={() => setPaymentModal(false)}
+                    style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}
+                >
                     <View
                         onStartShouldSetResponder={(e) => e.stopPropagation()}
                         style={{
@@ -1386,19 +1261,94 @@ const OrderDetails = ({ navigation, route }) => {
                             gap: 10,
                             backgroundColor: '#fff',
                             paddingHorizontal: 20,
-                            paddingBottom: 20,
-                            paddingTop: 10,
+                            paddingVertical: 20,
                             borderRadius: 10,
                         }}
                     >
-                        {/* <TouchableOpacity onPress={handleEditpayment} style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+                        {/* EDIT */}
+                        <TouchableOpacity
+                            onPress={() => handleEditPayment(selectedentry)}
+                            style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}
+                        >
                             <Image source={require('../../assets/Edit1.png')} style={{ height: 20, width: 20, tintColor: '#173161' }} />
                             <Text style={{ fontSize: 16, fontFamily: 'Inter-Medium', color: '#173161' }}>Edit</Text>
-                        </TouchableOpacity> */}
-                        {/* <TouchableOpacity onPress={() => { confirmDelete(); setPaymentModal(false); }} style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+                        </TouchableOpacity>
+
+                        {/* DELETE */}
+                        <TouchableOpacity
+                            onPress={() => { setPaymentModal(false); setDeleteConfirmationVisible(true); }}
+                            style={{ flexDirection: 'row', gap: 10, alignItems: 'center', marginTop: 10 }}
+                        >
                             <Image source={require('../../assets/trash-bin.png')} style={{ height: 20, width: 20, tintColor: '#173161' }} />
                             <Text style={{ fontSize: 16, fontFamily: 'Inter-Medium', color: '#173161' }}>Delete</Text>
-                        </TouchableOpacity> */}
+                        </TouchableOpacity>
+                    </View>
+                </TouchableOpacity>
+            </Modal>
+
+            {/* Delete Confirmation Modal */}
+            <Modal visible={deleteConfirmationVisible} transparent animationType="fade">
+                <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={() => setDeleteConfirmationVisible(false)}
+                    style={{
+                        flex: 1,
+                        backgroundColor: 'rgba(0,0,0,0.5)',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        padding: 20,
+                    }}
+                >
+                    <View
+                        onStartShouldSetResponder={(e) => e.stopPropagation()}
+                        style={{
+                            backgroundColor: '#fff',
+                            borderRadius: 12,
+                            padding: 20,
+                            width: '80%',
+                            alignItems: 'center',
+                        }}
+                    >
+                        <Text style={{ fontFamily: 'Inter-Bold', fontSize: 18, color: '#D9534F', marginBottom: 8, textAlign: 'center' }}>
+                            Delete Payment
+                        </Text>
+
+                        <Text style={{ fontFamily: 'Inter-Regular', fontSize: 14, color: '#555', textAlign: 'center', marginBottom: 20 }}>
+                            Are you sure you want to delete this payment?
+                        </Text>
+
+                        <View style={{ flexDirection: 'row', justifyContent: 'center', width: '100%' }}>
+                            <TouchableOpacity
+                                onPress={() => setDeleteConfirmationVisible(false)}
+                                style={{
+                                    flex: 1,
+                                    backgroundColor: '#ccc',
+                                    paddingVertical: 10,
+                                    borderRadius: 8,
+                                    marginRight: 5,
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <Text style={{ color: '#173161', fontFamily: 'Inter-SemiBold' }}>No</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setDeleteConfirmationVisible(false);
+                                    handleDeletePayment(selectedentry.payment_id);
+                                }}
+                                style={{
+                                    flex: 1,
+                                    backgroundColor: '#D9534F',
+                                    paddingVertical: 10,
+                                    borderRadius: 8,
+                                    marginLeft: 5,
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <Text style={{ color: '#fff', fontFamily: 'Inter-SemiBold' }}>Yes</Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 </TouchableOpacity>
             </Modal>

@@ -108,6 +108,8 @@ const Constant = {
         confirm_orderlist: 'order/confirm_orderlist.php',
         confirmlist_order: 'order/confirmlist_order.php',
         staff_wise_order_list: 'order/staff_wise_order_list.php',
+        update_status: 'order/update_status.php',
+
 
 
 
@@ -127,6 +129,25 @@ const Constant = {
         cancel_purchase: 'purchase/cancel_purchase.php',
         purchase_update_date: 'purchase/purchase_update_date.php',
         alldelete_confirmpurchase: 'purchase/alldelete_confirmpurchase.php',
+
+
+        add_payment: 'payment/add_payment.php',
+        delete_payment: 'payment/delete_payment.php',
+        update_payment: 'payment/update_payment.php',
+        payment_list: 'payment/payment_list.php',
+
+
+        add_payment_purchase: 'payment_purchase/add_payment.php',
+        update_payment_purchase: 'payment_purchase/update_payment.php',
+        delete_payment_purchase: 'payment_purchase/delete_payment.php',
+        list_payment_purchase: 'payment_purchase/list_payment.php',
+
+
+
+
+
+
+
 
 
 
@@ -150,10 +171,7 @@ const Constant = {
 
 
 
-        payment: 'payment.php',
-        update_payment: 'update_payment.php',
-        payment_list: 'payment_list.php',
-        old_due_payment: 'old_due_payment.php',
+
 
         list_price: 'list_price.php',
         update_price: 'update_price.php',

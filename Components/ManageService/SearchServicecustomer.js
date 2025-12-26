@@ -208,7 +208,10 @@ const SearchServicecustomer = ({ navigation }) => {
                             style={{ borderRadius: 10, padding: 10, borderColor: '#008000', borderWidth: 1, backgroundColor: '#fff' }}
                         >
                             <Text style={{ fontFamily: 'Inter-Regular', fontSize: 14, color: '#173161', textTransform: 'uppercase' }}>
-                                {selectedCompany.full_name}{selectedCompany.area ? ` (${selectedCompany.area})` : ''}
+                                {selectedCompany.full_name}
+                            </Text>
+                            <Text style={{ fontFamily: 'Inter-Regular', fontSize: 14, color: '#173161', textTransform: 'uppercase' }}>
+                                {selectedCompany.moblie_no}
                             </Text>
                             {/* <Text style={{ fontFamily: 'Inter-Regular', fontSize: 12, color: '#173161', textTransform: 'uppercase' }}>
                                 {selectedCompany.email}

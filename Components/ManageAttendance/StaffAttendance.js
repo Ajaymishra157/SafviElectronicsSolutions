@@ -1,4 +1,4 @@
-import { StatusBar, StyleSheet, Text, View, TouchableOpacity, Image, Keyboard, FlatList, ActivityIndicator, Modal } from 'react-native'
+import { StatusBar, ScrollView, StyleSheet, Text, View, TouchableOpacity, Image, Keyboard, FlatList, ActivityIndicator, Modal } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import Constant from '../Commoncomponent/Constant';
 import Subheader from '../Commoncomponent/Subheader';
@@ -24,12 +24,18 @@ const StaffAttendance = () => {
     const [selectedImage, setSelectedImage] = useState(null);
 
 
+    const COL_WIDTH = 90;
+    const INFO_WIDTH = 30;
+
+
     // Format date for display
-    const formatDisplayDate = (date) => {
-        const d = String(date.getDate()).padStart(2, "0");
-        const m = String(date.getMonth() + 1).padStart(2, "0");
-        const y = date.getFullYear();
-        return `${d}/${m}/${y}`;
+    const formatDatefordisplay = (date) => {
+        if (!date) return '';
+        const d = new Date(date);
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+        return `${day}-${month}-${year}`;
     };
 
     // Format date for API (YYYY-MM-DD format)
@@ -159,6 +165,114 @@ const StaffAttendance = () => {
         fetchAttendanceList(selectedValue);
     };
 
+    const renderAdminAttendanceItem = ({ item }) => {
+        return (
+            <>
+                {item.dates?.map((d, i) => (
+                    <View
+                        key={i}
+                        style={{
+                            flexDirection: 'row',
+                            borderWidth: 1,
+                            borderTopWidth: 0,
+                            borderColor: '#ddd',
+                            backgroundColor: '#fff',
+                        }}
+                    >
+                        {/* STAFF */}
+                        <View style={{ width: 120, padding: 8, borderRightWidth: 1, borderColor: '#ddd' }}>
+                            <Text style={{ fontSize: 12, textAlign: 'center' }}>
+                                {item.staffname}
+                            </Text>
+                        </View>
+
+                        {/* DATE */}
+                        <View style={{ width: 120, padding: 8, borderRightWidth: 1, borderColor: '#ddd' }}>
+                            <Text style={{ fontSize: 12, textAlign: 'center' }}>
+                                {formatDatefordisplay(item.date)}
+                            </Text>
+                        </View>
+
+                        {/* IN TIME */}
+                        <View style={{ width: 120, padding: 8, borderRightWidth: 1, borderColor: '#ddd' }}>
+                            <Text style={{ fontSize: 12, textAlign: 'center' }}>
+                                {d.checkin || '-'}
+                            </Text>
+                        </View>
+
+                        {/* IN IMAGE */}
+                        <TouchableOpacity
+                            style={{
+                                width: 120,
+                                padding: 8,
+                                borderRightWidth: 1,
+                                borderColor: '#ddd',
+                                alignItems: 'center',
+                            }}
+                            onPress={() => {
+                                if (d.image) {
+                                    setSelectedImage(d.image);   // ✅ STRING
+                                    setModalVisible(true);
+                                }
+                            }}
+                        >
+                            <Image
+                                source={d.image ? { uri: d.image } : require('../../assets/default.png')}
+                                style={{ width: 40, height: 40, borderRadius: 20, opacity: d.image ? 1 : 0.4 }}
+                            />
+                        </TouchableOpacity>
+
+
+                        {/* OUT TIME */}
+                        <View style={{ width: 120, padding: 8, borderRightWidth: 1, borderColor: '#ddd' }}>
+                            <Text style={{ fontSize: 12, textAlign: 'center' }}>
+                                {d.checkout === '00:00:00' ? '-' : d.checkout}
+                            </Text>
+                        </View>
+
+                        {/* OUT IMAGE */}
+                        <TouchableOpacity
+                            style={{
+                                width: 120,
+                                padding: 8,
+                                borderRightWidth: 1,
+                                borderColor: '#ddd',
+                                alignItems: 'center',
+                            }}
+                            onPress={() => {
+                                if (d.image_punchout) {
+                                    setSelectedImage(d.image_punchout); // ✅ STRING
+                                    setModalVisible(true);
+                                }
+                            }}
+                        >
+                            <Image
+                                source={d.image_punchout ? { uri: d.image_punchout } : require('../../assets/default.png')}
+                                style={{ width: 40, height: 40, borderRadius: 20, opacity: d.image_punchout ? 1 : 0.4 }}
+                            />
+                        </TouchableOpacity>
+
+
+                        {/* STATUS */}
+                        < View style={{ width: 120, padding: 8 }}>
+                            <Text
+                                style={{
+                                    fontSize: 12,
+                                    textAlign: 'center',
+                                    color: d.status === 'Present' ? 'green' : 'red',
+                                }}
+                            >
+                                {d.status}
+                            </Text>
+                        </ View>
+                    </View >
+                ))}
+            </>
+        );
+    };
+
+
+
     return (
         <View style={{ flex: 1, backgroundColor: "#F4F6FA" }}>
             <StatusBar backgroundColor="#173161" barStyle="light-content" />
@@ -215,7 +329,7 @@ const StaffAttendance = () => {
                                 fontFamily: 'Inter-Medium',
                                 color: '#333',
                             }}>
-                                {formatDisplayDate(startDate)}
+                                {formatDatefordisplay(startDate)}
                             </Text>
                             <Image
                                 source={require('../../assets/calendar.png')}
@@ -252,7 +366,7 @@ const StaffAttendance = () => {
                                 fontFamily: 'Inter-Medium',
                                 color: '#333',
                             }}>
-                                {formatDisplayDate(endDate)}
+                                {formatDatefordisplay(endDate)}
                             </Text>
                             <Image
                                 source={require('../../assets/calendar.png')}
@@ -352,214 +466,88 @@ const StaffAttendance = () => {
 
             {/* ATTENDANCE LIST */}
 
-            <View style={{ flex: 1, paddingHorizontal: 15, marginTop: 10 }}>
+            <View style={{ flex: 1, marginTop: 10 }}>
 
-                {/* LOADING STATE */}
+                {/* LOADING */}
                 {loading && (
-                    <View style={{
-                        flex: 1,
-                        justifyContent: "center",
-                        alignItems: "center",
-                        paddingTop: 40
-                    }}>
+                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                         <ActivityIndicator size="large" color="#173161" />
-                        <Text style={{
-                            marginTop: 10,
-                            fontFamily: 'Inter-Medium',
-                            fontSize: 16,
-                            color: '#173161'
-                        }}>
+                        <Text style={{ marginTop: 10, fontSize: 16, color: '#173161' }}>
                             Loading attendance...
                         </Text>
                     </View>
                 )}
 
-                {/* EMPTY STATE */}
+                {/* EMPTY */}
                 {!loading && attendanceList.length === 0 && (
-                    <View style={{
-                        flex: 1,
-                        justifyContent: "center",
-                        alignItems: "center",
-                        paddingTop: 40
-                    }}>
+                    <View style={{ alignItems: 'center', marginTop: 50 }}>
                         <Image
                             source={require('../../assets/staffattendance.png')}
-                            style={{ height: 100, width: 100 }}
+                            style={{ width: 120, height: 120 }}
                         />
-                        <Text style={{
-                            fontFamily: 'Inter-Medium',
-                            fontSize: 16,
-                            color: 'gray'
-                        }}>
-                            No attendance found
+                        <Text style={{ color: 'gray', marginTop: 10 }}>
+                            No attendance records found
                         </Text>
                     </View>
                 )}
 
-                {/* LIST VIEW */}
+                {/* TABLE */}
                 {!loading && attendanceList.length > 0 && (
-                    <FlatList
-                        data={attendanceList}
-                        keyExtractor={(item, index) => index.toString()}
-                        showsVerticalScrollIndicator={false}
-                        renderItem={({ item }) => (
-                            <View
-                                style={{
-                                    backgroundColor: "#FFF",
-                                    marginBottom: 15,
-                                    borderRadius: 10,
-                                    padding: 12,
-                                    shadowColor: "#000",
-                                    shadowOpacity: 0.1,
-                                    shadowOffset: { width: 0, height: 2 },
-                                    elevation: 2,
-                                }}
-                            >
-                                {/* Staff Name */}
-                                <Text style={{
-                                    fontSize: 16,
-                                    fontFamily: 'Inter-Bold',
-                                    color: '#173161',
-                                    marginBottom: 5,
-                                }}>
-                                    {item.staffname}
-                                </Text>
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        keyboardShouldPersistTaps="handled"
+                    >
+                        <View style={{ paddingHorizontal: 15 }}>
 
-                                {/* Date */}
-                                <Text
-                                    style={{
-                                        fontSize: 14,
-                                        fontFamily: 'Inter-Medium',
-                                        color: 'gray',
-                                        marginBottom: 10
-                                    }}
-                                >
-                                    {(() => {
-                                        const d = new Date(item.date);
-                                        const day = String(d.getDate()).padStart(2, '0');
-                                        const month = String(d.getMonth() + 1).padStart(2, '0');
-                                        const year = d.getFullYear();
-                                        return `${day}-${month}-${year}`;
-                                    })()}
-                                </Text>
-
-
-                                {/* TABLE HEADER */}
-                                <View style={{
-                                    flexDirection: 'row',
-                                    backgroundColor: '#173161',
-                                    paddingVertical: 8,
-                                    paddingHorizontal: 5,
-                                    borderRadius: 6
-                                }}>
-                                    <Text style={{
-                                        flex: 1,
-                                        fontSize: 13,
-                                        fontFamily: 'Inter-Bold',
-                                        color: "#FFF",
-                                        textAlign: "center",
-                                    }}>Check-In</Text>
-
-                                    <Text style={{
-                                        flex: 1,
-                                        fontSize: 13,
-                                        fontFamily: 'Inter-Bold',
-                                        color: "#FFF",
-                                        textAlign: "center",
-                                    }}>Check-Out</Text>
-
-                                    <Text style={{
-                                        flex: 1,
-                                        fontSize: 13,
-                                        fontFamily: 'Inter-Bold',
-                                        color: "#FFF",
-                                        textAlign: "center",
-                                    }}>Status</Text>
-                                </View>
-
-                                {/* TABLE ROWS */}
-                                {item.dates?.map((d, i) => {
-                                    const isLast = i === item.dates.length - 1;
-
-                                    return (
-                                        <View
-                                            key={i}
-                                            style={{
-                                                flexDirection: 'row',
-                                                paddingVertical: 10,
-                                                borderBottomWidth: 0.7,
-                                                borderColor: '#EEE',
-                                                alignItems: 'center'
-                                            }}
-                                        >
-                                            <Text style={{
-                                                flex: 1,
-                                                fontSize: 14,
-                                                fontFamily: 'Inter-Medium',
-                                                color: "#333",
-                                                textAlign: "center",
-                                            }}>
-                                                {d.checkin || "-"}
-                                            </Text>
-
-                                            <Text style={{
-                                                flex: 1,
-                                                fontSize: 14,
-                                                fontFamily: 'Inter-Medium',
-                                                color: "#333",
-                                                textAlign: "center",
-                                            }}>
-                                                {d.checkout || "-"}
-                                            </Text>
-
-                                            <Text style={{
-                                                flex: 1,
-                                                fontSize: 14,
-                                                fontFamily: 'Inter-Medium',
-                                                color: d.status === "Present" ? "green" : "red",
-                                                textAlign: "center",
-                                            }}>
-                                                {d.status || "-"}
-                                            </Text>
-
-                                            {isLast ? (
-                                                <TouchableOpacity
-                                                    style={{ padding: 5 }}
-                                                    onPress={() => {
-                                                        setSelectedImage(d.image || null);
-                                                        setModalVisible(true);
-                                                    }}
-                                                >
-                                                    <Icon name="info-circle" size={18} color="#173161" />
-                                                </TouchableOpacity>
-                                            ) : (
-                                                <View style={{ width: 28 }} />   // empty space for alignment
-                                            )}
-                                        </View>
-                                    )
-                                })}
-
-
-
-                                {/* PHOTO */}
-                                {/* {item.dates && item.dates[0]?.image ? (
-                                    <Image
-                                        source={{ uri: item.dates[0].image }}
+                            {/* 🔥 HEADER */}
+                            <View style={{
+                                flexDirection: 'row',
+                                backgroundColor: '#173161',
+                                borderWidth: 1,
+                                borderColor: '#ccc',
+                            }}>
+                                {[
+                                    'Staff',
+                                    'Date',
+                                    'In Time',
+                                    'In Image',
+                                    'Out Time',
+                                    'Out Image',
+                                    'Status',
+                                ].map((title, i) => (
+                                    <View
+                                        key={i}
                                         style={{
-                                            height: 120,
-                                            width: "100%",
-                                            marginTop: 10,
-                                            borderRadius: 10
+                                            width: 120,
+                                            paddingVertical: 10,
+                                            borderRightWidth: i === 6 ? 0 : 1,
+                                            borderColor: '#ccc',
+                                            alignItems: 'center',
                                         }}
-                                        resizeMode="cover"
-                                    />
-                                ) : null} */}
+                                    >
+                                        <Text style={{ color: '#FFF', fontSize: 12, fontFamily: 'Inter-Bold' }}>
+                                            {title}
+                                        </Text>
+                                    </View>
+                                ))}
                             </View>
-                        )}
-                    />
-                )}
 
+                            {/* 🔥 ROWS */}
+                            <FlatList
+                                data={attendanceList}
+                                keyExtractor={(item, index) => index.toString()}
+                                renderItem={renderAdminAttendanceItem}
+                                nestedScrollEnabled={true}
+                                keyboardShouldPersistTaps='handled'
+                                contentContainerStyle={{ paddingBottom: 30 }}
+                            />
+
+                        </View>
+                    </ScrollView>
+                )}
             </View>
+
             <Modal
                 visible={modalVisible}
                 transparent={true}
@@ -569,85 +557,43 @@ const StaffAttendance = () => {
                 <TouchableOpacity
                     style={{
                         flex: 1,
-                        backgroundColor: "rgba(0,0,0,0.6)",
+                        backgroundColor: "rgba(0,0,0,0.7)",
                         justifyContent: "center",
                         alignItems: "center",
-                        padding: 20,
                     }}
                     activeOpacity={1}
-                    onPress={() => {
-                        setModalVisible(false);
-                    }}
-
+                    onPress={() => setModalVisible(false)}
                 >
                     <View
                         style={{
-                            width: "90%",
-                            backgroundColor: "#FFF",
-                            borderRadius: 12,
-                            padding: 15,
+                            height: 260,
+                            width: 260,
+                            borderRadius: 130,     // 🔥 FULL CIRCLE
+                            backgroundColor: "#fff",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            overflow: "hidden",
                             elevation: 10,
                         }}
-                        onStartShouldSetResponder={(e) => e.stopPropagation()}
+                        onStartShouldSetResponder={() => true}
                     >
-                        <Text
-                            style={{
-                                fontSize: 18,
-                                fontFamily: "Inter-Bold",
-                                textAlign: "center",
-                                marginBottom: 10,
-                            }}
-                        >
-                            Attendance Image
-                        </Text>
-
                         {selectedImage ? (
                             <Image
                                 source={{ uri: selectedImage }}
                                 style={{
-                                    height: 300,
+                                    height: "100%",
                                     width: "100%",
-                                    borderRadius: 10,
-                                    backgroundColor: "#EEE",
+                                    borderRadius: 130,
                                 }}
-                                resizeMode="contain"
+                                resizeMode="cover"
                             />
                         ) : (
-                            <Text
-                                style={{
-                                    fontFamily: "Inter-Medium",
-                                    fontSize: 14,
-                                    textAlign: "center",
-                                    paddingVertical: 20,
-                                }}
-                            >
-                                No Image Available
-                            </Text>
+                            <Text>No Image</Text>
                         )}
-
-                        <TouchableOpacity
-                            onPress={() => setModalVisible(false)}
-                            style={{
-                                backgroundColor: "#173161",
-                                paddingVertical: 12,
-                                borderRadius: 10,
-                                marginTop: 15,
-                            }}
-                        >
-                            <Text
-                                style={{
-                                    color: "#FFF",
-                                    fontSize: 16,
-                                    fontFamily: "Inter-Bold",
-                                    textAlign: "center",
-                                }}
-                            >
-                                Close
-                            </Text>
-                        </TouchableOpacity>
                     </View>
                 </TouchableOpacity>
             </Modal>
+
 
 
 

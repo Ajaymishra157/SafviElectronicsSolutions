@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Image, ActivityIndicator, ScrollView, Keyboard, RefreshControl, Linking, Modal, TextInput, Dimensions, StatusBar, Alert } from 'react-native'
+import { View, Text, TouchableOpacity, Image, ActivityIndicator, ScrollView, Keyboard, RefreshControl, Linking, Modal, TextInput, Dimensions, StatusBar, Alert, ToastAndroid } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import Subheader from '../Commoncomponent/Subheader'
 import { useFocusEffect } from '@react-navigation/native';
@@ -33,16 +33,15 @@ const OrderList = ({ navigation, route }) => {
   const [orderdetaimodal, setOrderdetailModal] = useState(false);
 
   const [openstatus, setOpenStatus] = useState(false); // Controls dropdown visibility
-  const [valuestatus, setValueStatus] = useState(filterstatus ? filterstatus : 'Pending'); // Selected category value
+  const [valuestatus, setValueStatus] = useState(filterstatus ? filterstatus : 'All'); // Selected category value
   const [itemsstatus, setItemsStatus] = useState([
-    { label: 'All Status', value: 'All Status' },
+    { label: 'All', value: 'All' },
     { label: 'Pending', value: 'Pending' },
-    { label: 'Loading', value: 'Loading' },
-    { label: 'Cancel', value: 'Cancelled' },
-    { label: 'Delivered', value: 'Delivered' },
-    { label: 'Advanced', value: 'Advanced' },
-    { label: 'On The Way', value: 'On The Way' }
+    { label: 'Process', value: 'Process' },
+    { label: 'Completed', value: 'Completed' },
+    { label: 'Cancel', value: 'Cancel' }
   ]);
+
 
   const [openloadingopt, setOpenLoadingopt] = useState(false); // Controls dropdown visibility
   const [valueloadingopt, setValueLoadingopt] = useState('Drop'); // Selected category value
@@ -79,19 +78,21 @@ const OrderList = ({ navigation, route }) => {
   );
 
   const openModal = (item, x, y) => {
-    const modalWidth = 200; // Modal width (fixed)
+    const modalWidth = 170; // Modal width (fixed)
     const windowWidth = Dimensions.get('window').width;
-    const extraSpace = 40; // Adjust this value for more space
-    const centerX = x - modalWidth / 2;
-    const leftPosition = Math.max(20, Math.min(centerX, windowWidth - modalWidth - extraSpace));
 
-    setModalPosition({ top: y - 15, left: leftPosition });
+    // Ensure modal doesn't overflow screen
+    const leftPosition = Math.min(x, windowWidth - modalWidth - 10); // 10px margin from right edge
+
+    setModalPosition({ top: y, left: leftPosition });
     setSelectedOrder(item.order_no);
     setIsorderMerged(item.merge_order);
     setSelectedorderstatus(item.status);
     setUrgentorder(item.set_urgent);
     setModalvisible(true);
   };
+
+
 
   const openMergeOrderModal = (selectedOrderNo) => {
     navigation.navigate('MergeOrder', { selectedOrderNo })
@@ -141,33 +142,47 @@ const OrderList = ({ navigation, route }) => {
     setLoading(false);
   };
 
-  // const listPermissions = async () => {
-  //   setMainloading(true);
-  //   const id = await AsyncStorage.getItem('admin_id');
-  //   const url = `${Constant.URL}${Constant.OtherURL.permision_list}`;
-  //   const response = await fetch(url, {
-  //     method: 'POST',
-  //     headers: { 'Content-Type': 'application/json' },
-  //     body: JSON.stringify({ user_id: id }),
-  //   });
-  //   const result = await response.json();
-  //   if (result.code == "200") {
-  //     let permissionsData = {};
-  //     result.payload.forEach((item) => {
-  //       const permsArray = item.menu_permission.split(',');
-  //       let permsObject = {};
-  //       permsArray.forEach((perm) => {
-  //         permsObject[perm] = true;
-  //       });
-  //       permissionsData[item.menu_name] = permsObject;
-  //     });
 
-  //     setPermissions(permissionsData);
-  //   } else {
-  //     console.log('Error fetching permissions');
-  //   }
-  //   setMainloading(false);
-  // };
+  const handleStatusChange = async (newStatus) => {
+    setLoading(true);
+    console.log("selected order and new status", selectedorder, newStatus);
+
+    try {
+      const url = `${Constant.URL}${Constant.OtherURL.update_status}`;
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          order_no: selectedorder,   // ✅ CORRECT
+          status: newStatus,
+        }),
+      });
+
+      const result = await response.json();
+      console.log('Status Update Response:', result);
+
+      if (result.code == 200) {
+        ToastAndroid.show('Order status updated', ToastAndroid.SHORT);
+        setModalvisible(false);
+
+        // 🔄 refresh list
+        listmyorders(searchTerm);
+      } else {
+        console.log('Failed to update status');
+      }
+
+    } catch (error) {
+      console.log('Status update error:', error);
+
+    }
+
+    setLoading(false);
+  };
+
+
+
+
 
   const hasPermissions = permissions['Orders'] || {};
   const hasmarginPermissions = permissions['Show Margin'];
@@ -183,6 +198,7 @@ const OrderList = ({ navigation, route }) => {
   );
 
   const listmyorders = async (query) => {
+    console.log("values status ye hai okay", valuestatus);
     setLoading(true);
     try {
       const id = await AsyncStorage.getItem('admin_id');
@@ -652,18 +668,8 @@ const OrderList = ({ navigation, route }) => {
                   marginTop: index > 0 && item.merge_order != myorders[index - 1].merge_order ? 10 : 0,
                 }}>
                   <View style={{
-                    backgroundColor:
-                      item.status == 'Pending' && item.set_urgent == 'Yes'
-                        ? '#ffcccc'
-                        : item.payment_mode == 'Cash'
-                          ? '#ccffcc' // Green for Cash
-                          : item.payment_mode == 'Baki'
-                            ? '#ffcc99' // Orange for Baki
-                            : item.payment_mode == 'Bank Transfer'
-                              ? '#d3d3d3' // Gray for Bank Transfer
-                              : item.status == 'Loading' ? '#ffffcc'
-                                : item.status == 'On The Way' ? '#ccccff'
-                                  : '#fff', borderRadius: 10, padding: 10, marginHorizontal: item.merge_order ? 3 : 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 3.84, elevation: 5,
+                    backgroundColor: '#ffffff',
+                    borderRadius: 10, padding: 10, marginHorizontal: item.merge_order ? 3 : 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 3.84, elevation: 5,
 
                   }}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -672,14 +678,18 @@ const OrderList = ({ navigation, route }) => {
                         <Text style={{ fontFamily: 'Inter-Regular', fontSize: 14, color: '#173161', textTransform: 'uppercase' }}>{item.order_no}</Text>
                       </View>
 
-                      {/* {(item.status == 'Pending' || item.status == 'Loading' || item.status == 'On The Way' || item.status == 'Cancelled') &&
-                        <TouchableOpacity onPress={(e) => {
+
+                      <TouchableOpacity
+                        onPress={(e) => {
                           const { pageX, pageY } = e.nativeEvent;
                           openModal(item, pageX, pageY);
-                        }} style={{ paddingHorizontal: 10 }}>
-                          <Image source={require('../../assets/threedot.png')} style={{ height: 20, width: 20 }} />
-                        </TouchableOpacity>
-                      } */}
+                        }}
+                        style={{ paddingHorizontal: 10 }}
+                      >
+                        <Image source={require('../../assets/threedot.png')} style={{ height: 20, width: 20 }} />
+                      </TouchableOpacity>
+
+
                     </View>
 
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 5 }}>
@@ -810,46 +820,59 @@ const OrderList = ({ navigation, route }) => {
       </View>
 
       <Modal visible={modalvisible} transparent={true} animationType="slide">
-        <TouchableOpacity onPress={() => { setModalvisible(false); }} style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <View onStartShouldSetResponder={(e) => e.stopPropagation()} style={{ position: 'absolute', top: modalPosition.top, left: modalPosition.left, gap: 10, backgroundColor: '#fff', paddingHorizontal: 20, paddingBottom: 20, paddingTop: 10, borderRadius: 10, }} >
-            {usertype != 'Transporter' && selectedorderstatus != 'Cancelled' &&
-              <TouchableOpacity disabled={selectedorderstatus != 'Pending'} onPress={setorderurgent} style={{ flexDirection: 'row', gap: 10, alignItems: 'center', opacity: selectedorderstatus != 'Pending' ? 0.5 : 1 }}>
-                <Image source={require('../../assets/exclamation.png')} style={{ height: 20, width: 20, tintColor: '#173161' }} />
-                <Text style={{ fontSize: 16, fontFamily: 'Inter-Medium', color: '#173161' }}>{urgentorder == 'Yes' ? 'Cancel Urgent' : 'Set Urgent'}</Text>
-              </TouchableOpacity>}
-            {usertype != 'Salesman' && selectedorderstatus != 'Cancelled' &&
-              <>
-                <TouchableOpacity disabled={selectedorderstatus == 'On The Way'} onPress={() => handleloading(selectedorderstatus)} style={{ flexDirection: 'row', gap: 10, alignItems: 'center', opacity: selectedorderstatus == 'On The Way' ? 0.5 : 1 }}>
-                  <Image source={require('../../assets/truck.png')} style={{ height: 20, width: 20, tintColor: '#173161' }} />
-                  <Text style={{ fontSize: 16, fontFamily: 'Inter-Medium', color: '#173161' }}>{selectedorderstatus == 'Loading' ? 'Cancel Loading' : 'Loading'}</Text>
+        <TouchableOpacity
+          onPress={() => setModalvisible(false)}
+          style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}
+        >
+          <View
+            onStartShouldSetResponder={(e) => e.stopPropagation()}
+            style={{
+              position: 'absolute',
+              top: modalPosition.top,
+              left: modalPosition.left,
+              gap: 8,
+              backgroundColor: '#fff',
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+              borderRadius: 10,
+            }}
+          >
+            {['All', 'Pending', 'Process', 'Completed', 'Cancel'].map((status) => {
+              const isSelected = selectedorderstatus === status;
+              return (
+                <TouchableOpacity
+                  key={status}
+                  onPress={() => handleStatusChange(status)}
+                  style={{
+                    flexDirection: 'row',
+                    gap: 8,
+                    alignItems: 'center',
+                    backgroundColor: isSelected ? '#E0F0FF' : 'transparent',
+                    paddingVertical: 6,   // reduced
+                    paddingHorizontal: 10, // reduced
+                    borderRadius: 8,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      fontFamily: 'Inter-Medium',
+                      color: isSelected ? '#173161' : '#555',
+                      fontWeight: isSelected ? '600' : '400',
+                    }}
+                  >
+                    {status}
+                  </Text>
                 </TouchableOpacity>
-                <TouchableOpacity disabled={selectedorderstatus == 'Pending'} onPress={() => handleOnTheWay(selectedorderstatus)} style={{ flexDirection: 'row', gap: 10, alignItems: 'center', opacity: selectedorderstatus == 'Pending' ? 0.5 : 1 }}>
-                  <Image source={require('../../assets/vehicle.png')} style={{ height: 20, width: 20, tintColor: '#173161' }} />
-                  <Text style={{ fontSize: 16, fontFamily: 'Inter-Medium', color: '#173161' }}>{selectedorderstatus == 'On The Way' ? 'Cancel On The Way' : 'On The Way'}</Text>
-                </TouchableOpacity>
-              </>}
-            {(usertype == 'Admin' && selectedorderstatus == 'Pending' && selectedorderstatus != 'Cancelled') && (
-              <TouchableOpacity onPress={() => { (isordermerged == null ? openMergeOrderModal(selectedorder) : handleSelectUnMergeOrder(selectedorder)); setRemarkModal(false); setModalvisible(false); }} style={{ flexDirection: 'row', gap: 10, alignItems: 'center', opacity: 1 }}>
-                <Image source={require('../../assets/merge.png')} style={{ height: 16, width: 16, tintColor: '#173161' }} />
-                <Text style={{ fontSize: 16, fontFamily: 'Inter-Medium', color: '#173161' }}>{isordermerged == null ? 'Merge Order' : 'Unmerge Order'}</Text>
-              </TouchableOpacity>
-            )}
-            {(hasPermissions.Cancel && selectedorderstatus != 'Delivered' && selectedorderstatus != 'Cancelled') && (
-              <TouchableOpacity onPress={() => { setRemarkModal(true); setModalvisible(false); }} style={{ flexDirection: 'row', gap: 10, alignItems: 'center', opacity: 1 }}>
-                <Image source={require('../../assets/cancel.png')} style={{ height: 14, width: 14, tintColor: '#173161' }} />
-                <Text style={{ fontSize: 16, fontFamily: 'Inter-Medium', color: '#173161' }}>Cancel</Text>
-              </TouchableOpacity>
-            )}
-
-            {(selectedorderstatus == 'Cancelled') && (
-              <TouchableOpacity onPress={() => handleresettopending()} style={{ flexDirection: 'row', gap: 10, alignItems: 'center', opacity: 1 }}>
-                <Image source={require('../../assets/reset.png')} style={{ height: 14, width: 14, tintColor: '#173161' }} />
-                <Text style={{ fontSize: 16, fontFamily: 'Inter-Medium', color: '#173161' }}>Reset To Pending</Text>
-              </TouchableOpacity>
-            )}
+              );
+            })}
           </View>
         </TouchableOpacity>
       </Modal>
+
+
+
+
 
       {/* Loading drop and pickup modal */}
       <Modal visible={vehiclemodal} transparent={true} animationType="slide">

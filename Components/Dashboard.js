@@ -508,21 +508,18 @@ const Dashboard = ({ navigation }) => {
                         </View>
                     )}
 
-                    {/* {usertype == 'Admin' && (
+                    {usertype == 'Admin' && (
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, backgroundColor: '#fff', borderRadius: 10, borderWidth: 0.5, borderColor: '#DCDCDC', elevation: 5, marginTop: 10 }}>
                             {/* {hasPermission("Salesman Report") &&  */}
-                    {/* <PermissionButton navigation={navigation} route="SalesReport" image="sales" label="Sales Report" /> */}
+                            {/* <PermissionButton navigation={navigation} route="SalesReport" image="sales" label="Sales Report" /> */}
+                            <PermissionButton navigation={navigation} route="VendorsList" image="customers" label="Vendors" />
+                            <PermissionButton navigation={navigation} route="Purchaselist" image="purchase" label="Purchase" />
 
-                    {/* <PermissionButton navigation={navigation} route="StockReport" image="stock" label="Stock Report" /> */}
+                            {/* <PermissionButton navigation={navigation} route="StockReport" image="stock" label="Stock Report" /> */}
 
-                    {/* {hasPermission("Party Ledger") &&  */}
-                    {/* <PermissionButton navigation={navigation} route="Partyledger" image="ledger" label="Party Ledger" /> */}
 
-                    {/* {hasPermission("LMTD") &&  */}
-                    {/* <PermissionButton navigation={navigation} route="LMTDReport" image="products" label="LMTD" /> */}
-
-                    {/* </View> */}
-                    {/* )} */}
+                        </View>
+                    )}
 
                     {/* // ) : null} */}
 
